@@ -280,3 +280,50 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
 .price-fields input::placeholder { color: var(--muted); opacity: 0.6; }
 .price-fields input:focus { outline: none; border-color: var(--accent); }
 .price-fields .link { padding-bottom: 10px; white-space: nowrap; }
+
+/* --- recipe editor ------------------------------------------------------ */
+
+.field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.field span {
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+}
+.field input, .field textarea {
+  width: 100%; padding: 12px 14px; font: inherit; font-size: 16px;
+  color: var(--text); background: var(--surface-2);
+  border: 1.5px solid var(--line); border-radius: 10px; resize: vertical;
+}
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+
+.edit-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 0; border-bottom: 1px solid var(--line);
+}
+.edit-row .n { flex: 1; font-weight: 550; }
+.edit-row .qty {
+  width: 76px; padding: 9px 10px; font: inherit; font-size: 16px;
+  text-align: right; font-variant-numeric: tabular-nums;
+  color: var(--text); background: var(--surface-2);
+  border: 1.5px solid var(--line); border-radius: 8px;
+}
+.edit-row .qty:focus { outline: none; border-color: var(--accent); }
+.edit-row .unit { width: 22px; color: var(--muted); font-size: 13px; }
+
+.edit-add {
+  display: flex; flex-direction: column; gap: 2px; width: 100%;
+  text-align: left; padding: 11px 0; border-bottom: 1px solid var(--line);
+}
+.edit-add .n { font-weight: 550; }
+.edit-add .d { color: var(--muted); font-size: 13px; }
+
+.edit-step { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.edit-step .num {
+  flex: 0 0 26px; height: 26px; margin-top: 8px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  display: grid; place-items: center; font-size: 13px; font-weight: 700;
+}
+.edit-step textarea {
+  flex: 1; padding: 10px 12px; font: inherit; font-size: 15px;
+  color: var(--text); background: var(--surface-2);
+  border: 1.5px solid var(--line); border-radius: 10px; resize: vertical;
+}
+.edit-step textarea:focus { outline: none; border-color: var(--accent); }

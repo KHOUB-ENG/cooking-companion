@@ -1,25 +1,34 @@
 import { useMemo, useState } from 'react'
-import { RECIPES, RECIPE_BY_ID } from './data/recipes'
 import { buildPriceBook, editedCount } from './lib/prices'
+import { bookAsList, buildRecipeBook, isRecipeEdited } from './lib/recipeEdits'
 import { exportData, useAppState, type Step } from './lib/store'
+import { EditRecipeScreen } from './screens/EditRecipe'
 import { EquipmentScreen, GoalsScreen, PlanScreen, StoreScreen } from './screens/Setup'
 import { PricesScreen } from './screens/Prices'
 import { SwipeScreen } from './screens/Swipe'
 import { WeekScreen } from './screens/Week'
 
-/** The linear flow. 'prices' sits outside it - you dip into it and come back. */
+/** The linear flow. 'prices' and 'edit' sit outside it - dip in, come back. */
 const STEPS: Step[] = ['store', 'goals', 'equipment', 'plan', 'swipe', 'week']
 
 export default function App() {
   const {
-    state, patchSetup, like, pass, resetSwipes, setPrice, resetPrices,
+    state, patchSetup, like, pass, resetSwipes,
+    setPrice, resetPrices, setRecipeEdit, resetRecipe,
   } = useAppState()
   const [step, setStep] = useState<Step>('store')
   const [returnTo, setReturnTo] = useState<Step>('store')
+  const [editingId, setEditingId] = useState<string | null>(null)
 
-  // Your shelf-checked prices layered over the shipped estimates. Everything
-  // that costs anything reads from this, never from the raw table.
+  // Your corrections, layered over what ships in the code. Everything that
+  // costs or cooks reads from these, never from the raw data files.
   const book = useMemo(() => buildPriceBook(state.prices), [state.prices])
+  const recipeBook = useMemo(() => buildRecipeBook(state.recipeEdits), [state.recipeEdits])
+  const recipeList = useMemo(() => bookAsList(recipeBook), [recipeBook])
+  const editedRecipes = useMemo(
+    () => new Set(Object.keys(state.recipeEdits).filter(id => isRecipeEdited(state.recipeEdits, id))),
+    [state.recipeEdits],
+  )
   const corrected = editedCount(state.prices)
 
   const index = STEPS.indexOf(step)
@@ -31,6 +40,12 @@ export default function App() {
   const openPrices = () => {
     setReturnTo(step)
     setStep('prices')
+  }
+
+  const openEditor = (id: string) => {
+    setReturnTo(step)
+    setEditingId(id)
+    setStep('edit')
   }
 
   const canAdvance =
@@ -52,6 +67,20 @@ export default function App() {
     )
   }
 
+  if (step === 'edit' && editingId && recipeBook[editingId]) {
+    return (
+      <div className="app">
+        <EditRecipeScreen
+          recipe={recipeBook[editingId]}
+          edited={editedRecipes.has(editingId)}
+          onSave={setRecipeEdit}
+          onReset={resetRecipe}
+          onClose={() => { setEditingId(null); setStep(returnTo) }}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="app">
       <div className="progress">
@@ -63,12 +92,12 @@ export default function App() {
       )}
       {step === 'goals' && <GoalsScreen setup={state.setup} patch={patchSetup} />}
       {step === 'equipment' && <EquipmentScreen setup={state.setup} patch={patchSetup} />}
-      {step === 'plan' && <PlanScreen setup={state.setup} patch={patchSetup} recipes={RECIPES} />}
+      {step === 'plan' && <PlanScreen setup={state.setup} patch={patchSetup} recipes={recipeList} />}
 
       {step === 'swipe' && (
         <SwipeScreen
           setup={state.setup}
-          recipes={RECIPES}
+          recipes={recipeList}
           book={book}
           liked={state.liked}
           passed={state.passed}
@@ -82,11 +111,13 @@ export default function App() {
         <WeekScreen
           setup={state.setup}
           liked={state.liked}
-          recipeById={RECIPE_BY_ID}
+          recipeById={recipeBook}
           book={book}
           corrected={corrected}
+          editedRecipes={editedRecipes}
           onBack={() => setStep('swipe')}
           onCheckPrices={openPrices}
+          onEditRecipe={openEditor}
         />
       )}
 

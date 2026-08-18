@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { DEFAULT_SETUP, type PlanSetup } from '../types'
 import type { Selection } from './cost'
 import type { Overrides, PriceOverride } from './prices'
+import type { RecipeOverride, RecipeOverrides } from './recipeEdits'
 
 const KEY = 'cooking-companion-v1'
 
@@ -9,6 +10,8 @@ export type Step =
   | 'store' | 'goals' | 'equipment' | 'plan' | 'swipe' | 'week'
   /** Off the linear flow: dip in from anywhere, come back where you were. */
   | 'prices'
+  /** Editing one recipe, reached from your week. */
+  | 'edit'
 
 export interface AppState {
   setup: PlanSetup
@@ -22,6 +25,8 @@ export interface AppState {
   cooked: string[]
   /** Your shelf-checked prices. These beat whatever ships in the code. */
   prices: Overrides
+  /** Your changes to recipes you've cooked. Also beat the shipped versions. */
+  recipeEdits: RecipeOverrides
 }
 
 const EMPTY: AppState = {
@@ -31,6 +36,7 @@ const EMPTY: AppState = {
   selections: [],
   cooked: [],
   prices: {},
+  recipeEdits: {},
 }
 
 function load(): AppState {
@@ -98,9 +104,21 @@ export function useAppState() {
     setState(s => ({ ...s, prices: {} }))
   }, [])
 
+  const setRecipeEdit = useCallback((id: string, patch: RecipeOverride) => {
+    setState(s => ({ ...s, recipeEdits: { ...s.recipeEdits, [id]: patch } }))
+  }, [])
+
+  const resetRecipe = useCallback((id: string) => {
+    setState(s => {
+      const recipeEdits = { ...s.recipeEdits }
+      delete recipeEdits[id]
+      return { ...s, recipeEdits }
+    })
+  }, [])
+
   return {
     state, setState, patchSetup, like, pass, resetSwipes, setSelections,
-    setPrice, resetPrices,
+    setPrice, resetPrices, setRecipeEdit, resetRecipe,
   }
 }
 

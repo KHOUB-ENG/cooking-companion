@@ -73,6 +73,21 @@ export const INGREDIENTS: Ingredient[] = [
   // --- frozen --------------------------------------------------------------
   { id: 'peas', name: 'Frozen peas', aisle: 'frozen', unit: 'g', pack: { size: 900, price: 135 }, packLabel: '900g bag' },
   { id: 'mixedveg', name: 'Frozen mixed veg', aisle: 'frozen', unit: 'g', pack: { size: 1000, price: 125 }, packLabel: '1kg bag' },
+
+  // --- added for the wider recipe pack ------------------------------------
+  { id: 'cherrytom', name: 'Cherry tomatoes', aisle: 'fruit_veg', unit: 'g', pack: { size: 400, price: 145 }, packLabel: '400g punnet' },
+  { id: 'springonion', name: 'Spring onions', aisle: 'fruit_veg', unit: 'each', pack: { size: 8, price: 55 }, packLabel: 'a bunch (about 8)' },
+  { id: 'broccoli', name: 'Broccoli', aisle: 'fruit_veg', unit: 'each', pack: { size: 1, price: 65 }, packLabel: '1 head' },
+  { id: 'chorizo', name: 'Chorizo', aisle: 'meat_fish', unit: 'g', pack: { size: 225, price: 189 }, packLabel: '225g pack' },
+  { id: 'feta', name: 'Feta', aisle: 'dairy_eggs', unit: 'g', pack: { size: 200, price: 145 }, packLabel: '200g block' },
+  { id: 'sweetcorn', name: 'Tinned sweetcorn', aisle: 'tins_jars', unit: 'g', pack: { size: 325, price: 45 }, packLabel: '325g tin' },
+  { id: 'currypaste', name: 'Thai green curry paste', aisle: 'tins_jars', unit: 'g', pack: { size: 180, price: 145 }, packLabel: '180g jar' },
+  { id: 'mayo', name: 'Mayonnaise', aisle: 'tins_jars', unit: 'ml', pack: { size: 500, price: 119 }, packLabel: '500ml jar' },
+  { id: 'breadcrumbs', name: 'Golden breadcrumbs', aisle: 'cupboard', unit: 'g', pack: { size: 175, price: 65 }, packLabel: '175g tub' },
+  { id: 'honey', name: 'Honey', aisle: 'cupboard', unit: 'g', pack: { size: 340, price: 145 }, packLabel: '340g jar', staple: true },
+  { id: 'flour', name: 'Plain flour', aisle: 'cupboard', unit: 'g', pack: { size: 1500, price: 79 }, packLabel: '1.5kg bag', staple: true },
+  { id: 'salmon', name: 'Frozen salmon fillets', aisle: 'frozen', unit: 'g', pack: { size: 480, price: 385 }, packLabel: '4 fillets, 480g' },
+  { id: 'frozenchips', name: 'Frozen chips', aisle: 'frozen', unit: 'g', pack: { size: 1500, price: 175 }, packLabel: '1.5kg bag' },
 ]
 
 export const INGREDIENT_BY_ID: Record<string, Ingredient> =

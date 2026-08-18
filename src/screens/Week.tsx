@@ -16,9 +16,15 @@ interface Props {
   corrected: number
   onBack: () => void
   onCheckPrices: () => void
+  onEditRecipe: (id: string) => void
+  /** Recipe ids you have changed, so the panel can say so. */
+  editedRecipes: Set<string>
 }
 
-export function WeekScreen({ setup, liked, recipeById, book, corrected, onBack, onCheckPrices }: Props) {
+export function WeekScreen({
+  setup, liked, recipeById, book, corrected,
+  onBack, onCheckPrices, onEditRecipe, editedRecipes,
+}: Props) {
   const [openRecipe, setOpenRecipe] = useState<string | null>(null)
 
   const chosen = liked.slice(0, setup.recipeCount)
@@ -192,6 +198,7 @@ export function WeekScreen({ setup, liked, recipeById, book, corrected, onBack, 
               <span>
                 <span style={{ fontSize: 26, marginRight: 10 }}>{recipe.emoji}</span>
                 <span style={{ fontWeight: 650 }}>{recipe.name}</span>
+                {editedRecipes.has(id) && <span className="badge" style={{ marginLeft: 8 }}>yours</span>}
                 <br />
                 <span className="d" style={{ color: 'var(--muted)', fontSize: 14 }}>
                   {portionsOf(id)} portions · {recipe.minutes} min
@@ -222,6 +229,14 @@ export function WeekScreen({ setup, liked, recipeById, book, corrected, onBack, 
                 </ol>
 
                 {recipe.tip && <div className="tip"><b>Don't get it wrong:</b> {recipe.tip}</div>}
+
+                <button
+                  className="btn ghost"
+                  style={{ width: '100%', marginTop: 14 }}
+                  onClick={() => onEditRecipe(id)}
+                >
+                  {editedRecipes.has(id) ? 'Edit your version' : 'Change this recipe'}
+                </button>
               </div>
             )}
           </div>
