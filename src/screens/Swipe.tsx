@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState } from 'react'
-import type { PlanSetup, Recipe } from '../types'
-import { EQUIPMENT_ICON } from '../types'
 import {
-  costPerPortion, filterRecipes, marginalCost, money, portionsForRecipe,
-  rankRecipes, buildSelections, type Marginal, type Selection,
+  buildSelections, costPerPortion, filterRecipes, fitsSlot, marginalCost, money,
+  nextSlot, planSlots, portionsForRecipe, rankRecipes,
+  type Marginal, type Slot,
 } from '../lib/cost'
 import type { PriceBook } from '../lib/prices'
+import { EQUIPMENT_ICON, type PlanSetup, type Recipe } from '../types'
 
 interface Props {
   setup: PlanSetup
@@ -15,13 +15,16 @@ interface Props {
   passed: string[]
   onLike: (id: string) => void
   onPass: (id: string) => void
+  onUnlike: (id: string) => void
   onReset: () => void
+  onBuild: () => void
 }
 
 /** How far you have to drag before it counts as a decision. */
 const THRESHOLD = 110
 
-export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPass, onReset }: Props) {
+export function SwipeScreen(props: Props) {
+  const { setup, recipes, book, liked, passed, onLike, onPass, onUnlike, onReset, onBuild } = props
   const [search, setSearch] = useState('')
   const [dx, setDx] = useState(0)
   const dragStart = useRef<number | null>(null)
@@ -31,57 +34,43 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
     [recipes],
   )
 
+  const slots = useMemo(
+    () => planSlots(setup, recipeById, liked),
+    [setup, recipeById, liked],
+  )
+  const slot = nextSlot(slots)
+  const filled = slots.filter(s => s.recipeId).length
+
   /** What's already in the trolley, so new cards can be priced against it. */
-  const already: Selection[] = useMemo(
+  const already = useMemo(
     () => buildSelections(setup, liked, recipeById),
     [setup, liked, recipeById],
   )
 
-  const isBreakfast = (r: Recipe) => r.tags.includes('breakfast')
-  const mainsPicked = liked.filter(id => recipeById[id] && !isBreakfast(recipeById[id])).length
-  const breakfastPicked = liked.some(id => recipeById[id] && isBreakfast(recipeById[id]))
-
-  /**
-   * Breakfasts are their own course. Porridge shouldn't turn up while you're
-   * picking dinners, so mains come first and the deck only switches over once
-   * you've got enough of them.
-   */
-  const pickingBreakfast =
-    setup.breakfasts > 0 && !breakfastPicked && mainsPicked >= setup.recipeCount
-
   const queue = useMemo(() => {
-    const eligible = filterRecipes(recipes, setup, search)
-      .filter(r => (pickingBreakfast ? isBreakfast(r) : !isBreakfast(r)))
+    if (!slot) return []
+    const wantBreakfast = slot.kind === 'breakfast'
+    const eligible = filterRecipes(recipes, setup, search).filter(r => {
+      if (r.tags.includes('breakfast') !== wantBreakfast) return false
+      return fitsSlot(r, slot)
+    })
     const ranked = rankRecipes(eligible, setup, book, already, recipeById)
     return ranked.filter(r => !liked.includes(r.id) && !passed.includes(r.id))
-  }, [recipes, setup, book, search, liked, passed, already, recipeById, pickingBreakfast])
-
-  /** How much the card on top would actually add to the shop. */
-  const topMarginal: Marginal | null = useMemo(() => {
-    const top = queue[0]
-    if (!top || already.length === 0) return null
-    const target = pickingBreakfast
-      ? setup.breakfasts
-      : (setup.lunches + setup.dinners) / Math.max(1, setup.recipeCount)
-    return marginalCost(
-      already,
-      { recipeId: top.id, portions: portionsForRecipe(top, target) },
-      recipeById,
-      book,
-    )
-  }, [queue, already, setup, pickingBreakfast, recipeById, book])
+  }, [recipes, setup, book, search, liked, passed, already, recipeById, slot])
 
   const top = queue[0]
   const next = queue[1]
 
-  /**
-   * Commit immediately. This used to defer the commit behind a 180ms timer so
-   * the card could fly off screen, and that timer was a bug farm: if anything
-   * re-rendered inside the window, the state updates fired from the callback
-   * were dropped and the swipe was silently lost. For a swipe app, eating
-   * someone's choice is the worst failure there is - so the decision lands the
-   * instant you make it, and the next card simply takes its place.
-   */
+  const topMarginal: Marginal | null = useMemo(() => {
+    if (!top || already.length === 0 || !slot) return null
+    return marginalCost(
+      already,
+      { recipeId: top.id, portions: portionsForRecipe(top, slot.portions) },
+      recipeById,
+      book,
+    )
+  }, [top, already, slot, recipeById, book])
+
   function decide(dir: 1 | -1) {
     if (!top) return
     if (dir === 1) onLike(top.id)
@@ -94,12 +83,10 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
     dragStart.current = e.clientX
     ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
   }
-
   function onPointerMove(e: React.PointerEvent) {
     if (dragStart.current === null) return
     setDx(e.clientX - dragStart.current)
   }
-
   function onPointerUp() {
     if (dragStart.current === null) return
     dragStart.current = null
@@ -108,103 +95,189 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
     else setDx(0)
   }
 
-  // --- what the top card looks like right now -------------------------------
-  const offset = dx
   const dragging = dragStart.current !== null
   const cardStyle: React.CSSProperties = {
-    transform: `translateX(${offset}px) rotate(${offset / 22}deg)`,
+    transform: `translateX(${dx}px) rotate(${dx / 22}deg)`,
     transition: dragging ? 'none' : 'transform 0.18s ease-out',
   }
 
-  if (!top) {
+  // --- the week is full ------------------------------------------------------
+  if (!slot) {
     return (
       <div className="screen">
-        <div className="empty">
-          <div className="big">{liked.length > 0 ? '🎉' : '🤔'}</div>
-          {liked.length > 0 ? (
-            <>
-              <h2>That's the lot</h2>
-              <p>You've picked {liked.length}. Tap Build my week below.</p>
-            </>
-          ) : (
-            <>
-              <h2>Nothing matches</h2>
-              <p>
-                {search
-                  ? 'Try a different search.'
-                  : 'Your equipment or diet filters are ruling everything out. Go back and add some kit.'}
-              </p>
-            </>
-          )}
-          {(liked.length > 0 || passed.length > 0) && (
-            <button className="link" style={{ marginTop: 20 }} onClick={onReset}>
-              Start the deck again
-            </button>
-          )}
-        </div>
+        <h1>That's your week</h1>
+        <p className="sub">
+          {filled} {filled === 1 ? 'cook' : 'cooks'} planned. Tap one to swap it
+          for something else.
+        </p>
+        <SlotList slots={slots} recipeById={recipeById} book={book} onRemove={onUnlike} />
+        <button className="btn" style={{ width: '100%', marginTop: 18 }} onClick={onBuild}>
+          Build my week
+        </button>
+        <button className="link" style={{ display: 'block', margin: '18px auto 0' }} onClick={onReset}>
+          Start the picks again
+        </button>
       </div>
     )
   }
 
   return (
     <div className="screen">
-      {pickingBreakfast && (
-        <div className="deck-banner">
-          Mains sorted. Now pick a breakfast for your {setup.breakfasts}{' '}
-          {setup.breakfasts === 1 ? 'morning' : 'mornings'}.
-        </div>
-      )}
+      <SlotStrip slots={slots} recipeById={recipeById} onRemove={onUnlike} />
+
+      <div className="slot-brief">
+        <span className="which">
+          {slot.kind === 'breakfast'
+            ? 'Breakfast'
+            : `Cook ${slot.index + 1} of ${slots.filter(s => s.kind === 'main').length}`}
+        </span>
+        <span className="what">
+          {slot.kind === 'breakfast'
+            ? `${slot.portions} ${slot.portions === 1 ? 'morning' : 'mornings'}, made fresh each time.`
+            : slot.needs === 'freezer'
+              ? `${slot.portions} portions, eaten across the week — so it has to freeze and reheat well.`
+              : slot.needs === 'fridge'
+                ? `${slot.portions} portions, so it needs to be good again tomorrow from the fridge.`
+                : 'One portion, eaten the day you cook it. Anything goes.'}
+        </span>
+      </div>
 
       <input
         className="search"
-        placeholder={pickingBreakfast ? 'Search breakfasts' : 'Fancy something in particular?'}
+        placeholder={slot.kind === 'breakfast' ? 'Search breakfasts' : 'Fancy something in particular?'}
         value={search}
         onChange={e => setSearch(e.target.value)}
       />
 
-      <div className="deck">
-        {next && (
-          <div className="card" style={{ transform: 'scale(0.96) translateY(10px)', opacity: 0.6 }}>
-            <Art recipe={next} />
-            <Body recipe={next} book={book} marginal={null} />
-          </div>
-        )}
-
-        <div
-          className="card"
-          style={cardStyle}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-        >
-          <span className="stamp yes" style={{ opacity: Math.max(0, offset / THRESHOLD) }}>YES</span>
-          <span className="stamp no" style={{ opacity: Math.max(0, -offset / THRESHOLD) }}>NOPE</span>
-          <Art recipe={top} />
-          <Body recipe={top} book={book} marginal={topMarginal} />
+      {!top ? (
+        <div className="empty">
+          <div className="big">🤔</div>
+          <h2>Nothing fits this cook</h2>
+          <p>
+            {search
+              ? 'Try a different search.'
+              : slot.needs === 'freezer'
+                ? 'Nothing left that freezes well. Fewer portions per cook, or more recipes, would open it up.'
+                : 'Your equipment or diet filters are ruling everything out.'}
+          </p>
+          {(liked.length > 0 || passed.length > 0) && (
+            <button className="link" style={{ marginTop: 20 }} onClick={onReset}>
+              Start the picks again
+            </button>
+          )}
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="deck">
+            {next && (
+              <div className="card" style={{ transform: 'scale(0.96) translateY(10px)', opacity: 0.6 }}>
+                <Art recipe={next} />
+                <Body recipe={next} book={book} marginal={null} />
+              </div>
+            )}
+            <div
+              className="card"
+              style={cardStyle}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+            >
+              <span className="stamp yes" style={{ opacity: Math.max(0, dx / THRESHOLD) }}>YES</span>
+              <span className="stamp no" style={{ opacity: Math.max(0, -dx / THRESHOLD) }}>NOPE</span>
+              <Art recipe={top} />
+              <Body recipe={top} book={book} marginal={topMarginal} />
+            </div>
+          </div>
 
-      <div className="swipe-actions">
-        <button className="no" onClick={() => decide(-1)} aria-label="No thanks">✕</button>
-        <button className="yes" onClick={() => decide(1)} aria-label="Yes please">♥</button>
-      </div>
+          <div className="swipe-actions">
+            <button className="no" onClick={() => decide(-1)} aria-label="No thanks">✕</button>
+            <button className="yes" onClick={() => decide(1)} aria-label="Yes please">♥</button>
+          </div>
 
-      <p className="tiny">
-        {mainsPicked} of {setup.recipeCount} mains
-        {setup.breakfasts > 0 && (breakfastPicked ? ' · breakfast sorted' : ' · breakfast still to pick')}
-        {' · '}{queue.length} left to look at
-      </p>
+          <p className="tiny">
+            {filled} of {slots.length} cooks chosen · {queue.length} left that fit
+          </p>
+        </>
+      )}
     </div>
+  )
+}
+
+/** The week so far, as a row of chips above the deck. */
+function SlotStrip({ slots, recipeById, onRemove }: {
+  slots: Slot[]
+  recipeById: Record<string, Recipe>
+  onRemove: (id: string) => void
+}) {
+  return (
+    <div className="slot-strip">
+      {slots.map(s => {
+        const recipe = s.recipeId ? recipeById[s.recipeId] : null
+        return (
+          <button
+            key={s.index}
+            className={`slot-chip ${recipe ? 'filled' : ''}`}
+            disabled={!recipe}
+            onClick={() => recipe && onRemove(recipe.id)}
+            title={recipe ? `Remove ${recipe.name}` : undefined}
+          >
+            <span className="ico">{recipe ? recipe.emoji : s.kind === 'breakfast' ? '🥣' : '🍽️'}</span>
+            <span className="lbl">
+              {recipe ? recipe.name : s.kind === 'breakfast' ? 'Breakfast' : `${s.portions}p`}
+            </span>
+            {recipe && <span className="x">✕</span>}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function SlotList({ slots, recipeById, book, onRemove }: {
+  slots: Slot[]
+  recipeById: Record<string, Recipe>
+  book: PriceBook
+  onRemove: (id: string) => void
+}) {
+  return (
+    <>
+      {slots.map(s => {
+        const recipe = s.recipeId ? recipeById[s.recipeId] : null
+        if (!recipe) return null
+        const portions = portionsForRecipe(recipe, s.portions)
+        return (
+          <button className="recipe-row" key={s.index} onClick={() => onRemove(recipe.id)}>
+            <span className="emoji">{recipe.emoji}</span>
+            <span className="text">
+              <span className="n">{recipe.name}</span>
+              <span className="d">
+                {s.kind === 'breakfast' ? 'Breakfast · ' : ''}
+                {portions} portions · {money(costPerPortion(recipe, book))} a portion ·{' '}
+                {recipe.keeps === 'freezer' ? 'freezes' : recipe.keeps === 'fridge' ? 'keeps 2-3 days' : 'eat fresh'}
+              </span>
+            </span>
+            <span className="chev">✕</span>
+          </button>
+        )
+      })}
+    </>
   )
 }
 
 function Art({ recipe }: { recipe: Recipe }) {
   return (
-    <div className="art">
+    <div className="art" style={{ '--hue': hueFor(recipe.id) } as React.CSSProperties}>
       {recipe.image ? <img src={`/recipes/${recipe.image}`} alt="" draggable={false} /> : recipe.emoji}
     </div>
   )
+}
+
+/** A stable colour per recipe, so a deck without photos isn't a wall of grey. */
+function hueFor(id: string): string {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) % 360
+  return `${h}`
 }
 
 function Body({ recipe, book, marginal }: {
@@ -220,7 +293,7 @@ function Body({ recipe, book, marginal }: {
         <span><b>{money(costPerPortion(recipe, book))}</b> a portion</span>
         <span><b>{recipe.proteinPerServing}g</b> protein</span>
         <span><b>{recipe.minutes}</b> min</span>
-        <span>{recipe.equipment.map(e => EQUIPMENT_ICON[e]).join(' ')}</span>
+        <span>{recipe.equipment.length ? recipe.equipment.map(e => EQUIPMENT_ICON[e]).join(' ') : '🙌'}</span>
       </div>
 
       {marginal && (
@@ -231,9 +304,7 @@ function Body({ recipe, book, marginal }: {
               : `+${money(marginal.addedCost)} to your shop`}
           </span>
           {marginal.reuses.length > 0 && (
-            <span className="reuse">
-              Uses your {listOf(marginal.reuses)}
-            </span>
+            <span className="reuse">Uses your {listOf(marginal.reuses)}</span>
           )}
         </div>
       )}

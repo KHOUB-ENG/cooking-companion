@@ -83,6 +83,22 @@ export const DIET_LABEL: Record<Diet, string> = {
 
 export type Tag = Goal | Diet | 'spicy' | 'one_pot' | 'breakfast'
 
+/**
+ * How long a dish survives after you cook it. This is the thing that decides
+ * whether a recipe can fill a given slot in the week: a cook on Sunday that
+ * feeds you on Thursday has to freeze, and no amount of "high protein" makes
+ * a smash burger survive four days in the fridge.
+ */
+export type Keeps = 'fresh' | 'fridge' | 'freezer'
+
+export const KEEPS_RANK: Record<Keeps, number> = { fresh: 0, fridge: 1, freezer: 2 }
+
+export const KEEPS_LABEL: Record<Keeps, string> = {
+  fresh: 'Eat it straight away',
+  fridge: 'Keeps 2-3 days in the fridge',
+  freezer: 'Freezes and reheats well',
+}
+
 export interface RecipeIngredient {
   ingredientId: string
   /** Amount for the whole recipe at `baseServings`, in the ingredient's unit. */
@@ -104,6 +120,8 @@ export interface Recipe {
   equipment: Equipment[]
   tags: Tag[]
   proteinPerServing: number
+  /** How well it survives being cooked ahead. Drives which slots it can fill. */
+  keeps: Keeps
   ingredients: RecipeIngredient[]
   steps: string[]
   /** Shown on the week screen - the "you can't get this wrong" note. */

@@ -8,11 +8,13 @@ interface Props {
   recipes: Recipe[]
   book: PriceBook
   editedRecipes: Set<string>
+  customIds: Set<string>
   onEdit: (id: string) => void
+  onNew: () => void
   onBack: () => void
 }
 
-export function RecipeListScreen({ recipes, book, editedRecipes, onEdit, onBack }: Props) {
+export function RecipeListScreen({ recipes, book, editedRecipes, customIds, onEdit, onNew, onBack }: Props) {
   const [search, setSearch] = useState('')
 
   const shown = useMemo(() => {
@@ -31,6 +33,10 @@ export function RecipeListScreen({ recipes, book, editedRecipes, onEdit, onBack 
         anything else — your version is what the app uses from then on.
       </p>
 
+      <button className="btn" style={{ width: '100%', marginBottom: 14 }} onClick={onNew}>
+        Write a new recipe
+      </button>
+
       <input
         className="search"
         placeholder="Search recipes"
@@ -44,10 +50,13 @@ export function RecipeListScreen({ recipes, book, editedRecipes, onEdit, onBack 
           <span className="text">
             <span className="n">
               {r.name}
-              {editedRecipes.has(r.id) && <span className="badge">yours</span>}
+              {customIds.has(r.id) && <span className="badge">mine</span>}
+              {editedRecipes.has(r.id) && !customIds.has(r.id) && <span className="badge">edited</span>}
             </span>
             <span className="d">
               {money(costPerPortion(r, book))} a portion · {r.minutes} min ·{' '}
+              {r.keeps === 'freezer' ? 'freezes' : r.keeps === 'fridge' ? 'keeps 2-3 days' : 'eat fresh'}
+              {' · '}
               {r.equipment.length > 0
                 ? r.equipment.map(e => EQUIPMENT_ICON[e]).join(' ')
                 : 'no cooking'}

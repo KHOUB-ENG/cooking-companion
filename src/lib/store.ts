@@ -3,6 +3,7 @@ import { DEFAULT_SETUP, type PlanSetup } from '../types'
 import type { Pantry, Selection } from './cost'
 import type { Overrides, PriceOverride } from './prices'
 import type { RecipeOverride, RecipeOverrides } from './recipeEdits'
+import type { Recipe } from '../types'
 import { MAX_SESSIONS, type Session } from './sessions'
 
 const KEY = 'cooking-companion-v1'
@@ -25,7 +26,7 @@ export type Step =
 
 export interface AppState {
   setup: PlanSetup
-  /** Recipes swiped right, most recent first. This is the "saved" pile. */
+  /** Recipes swiped right, in pick order - they fill the week's cooks in turn. */
   liked: string[]
   /** Swiped left. Kept so the deck does not keep showing them. */
   passed: string[]
@@ -37,6 +38,8 @@ export interface AppState {
   prices: Overrides
   /** Your changes to recipes you've cooked. Also beat the shipped versions. */
   recipeEdits: RecipeOverrides
+  /** Recipes you added yourself. */
+  customRecipes: Recipe[]
   /** Plans you committed to, newest last. Each one is self-contained. */
   sessions: Session[]
   /** The one you're currently shopping for and cooking from. */
@@ -56,6 +59,7 @@ const EMPTY: AppState = {
   cooked: [],
   prices: {},
   recipeEdits: {},
+  customRecipes: [],
   sessions: [],
   currentSessionId: null,
   pantry: {},
@@ -100,7 +104,8 @@ export function useAppState() {
   const like = useCallback((id: string) => {
     setState(s => ({
       ...s,
-      liked: s.liked.includes(id) ? s.liked : [id, ...s.liked],
+      // Appended, not prepended: the first thing you pick is cook one.
+      liked: s.liked.includes(id) ? s.liked : [...s.liked, id],
       passed: s.passed.filter(p => p !== id),
     }))
   }, [])
@@ -111,6 +116,11 @@ export function useAppState() {
       passed: s.passed.includes(id) ? s.passed : [id, ...s.passed],
       liked: s.liked.filter(l => l !== id),
     }))
+  }, [])
+
+  /** Take a pick back out of the plan without banishing it from the deck. */
+  const unlike = useCallback((id: string) => {
+    setState(s => ({ ...s, liked: s.liked.filter(l => l !== id) }))
   }, [])
 
   const resetSwipes = useCallback(() => {
@@ -145,6 +155,10 @@ export function useAppState() {
       // Oldest first, capped - localStorage is small and this is a phone.
       sessions: [...s.sessions, session].slice(-MAX_SESSIONS),
       currentSessionId: session.id,
+      // The plan is committed, so the deck starts clean next time. Without this
+      // your second week opens with last week's picks already made.
+      liked: [],
+      passed: [],
     }))
   }, [])
 
@@ -191,6 +205,18 @@ export function useAppState() {
     setState(s => ({ ...s, currentSessionId: id }))
   }, [])
 
+  const addCustomRecipe = useCallback((recipe: Recipe) => {
+    setState(s => ({ ...s, customRecipes: [...s.customRecipes, recipe] }))
+  }, [])
+
+  const deleteCustomRecipe = useCallback((id: string) => {
+    setState(s => ({
+      ...s,
+      customRecipes: s.customRecipes.filter(r => r.id !== id),
+      liked: s.liked.filter(l => l !== id),
+    }))
+  }, [])
+
   const resetRecipe = useCallback((id: string) => {
     setState(s => {
       const recipeEdits = { ...s.recipeEdits }
@@ -200,8 +226,8 @@ export function useAppState() {
   }, [])
 
   return {
-    state, setState, patchSetup, like, pass, resetSwipes, setSelections,
-    setPrice, resetPrices, setRecipeEdit, resetRecipe,
+    state, setState, patchSetup, like, pass, unlike, resetSwipes, setSelections,
+    setPrice, resetPrices, setRecipeEdit, resetRecipe, addCustomRecipe, deleteCustomRecipe,
     addSession, updateSession, deleteSession, toggleIn, setCurrentSession, setPantry,
   }
 }

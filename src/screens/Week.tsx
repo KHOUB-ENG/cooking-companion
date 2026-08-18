@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { PRICES_CHECKED } from '../data/ingredients'
 import {
-  buildBasket, buildSelections, groupByAisle, money, scaledQty,
+  buildBasket, buildSelections, groupByAisle, money, planSlots, scaledQty,
   sharedIngredients, type Pantry,
 } from '../lib/cost'
 import type { PriceBook } from '../lib/prices'
@@ -37,6 +37,13 @@ export function WeekScreen(props: Props) {
   )
   const portionsOf = (id: string) =>
     selections.find(s => s.recipeId === id)?.portions ?? 0
+
+  /** The role each pick plays, so the week reads as cooks rather than a list. */
+  const slots = useMemo(
+    () => planSlots(setup, recipeById, liked),
+    [setup, recipeById, liked],
+  )
+  const slotOf = (id: string) => slots.find(s => s.recipeId === id)
 
   const basket = useMemo(
     () => buildBasket(selections, recipeById, book, pantry),
@@ -237,7 +244,14 @@ export function WeekScreen(props: Props) {
                 )}
                 <br />
                 <span style={{ color: 'var(--muted)', fontSize: 14 }}>
-                  {portionsOf(id)} portions · {recipe.minutes} min
+                  {slotOf(id)?.kind === 'breakfast'
+                    ? 'Breakfast'
+                    : `Cook ${(slotOf(id)?.index ?? 0) + 1}`}
+                  {' · '}{portionsOf(id)} portions · {recipe.minutes} min
+                  {' · '}
+                  {recipe.keeps === 'freezer' ? 'freezes'
+                    : recipe.keeps === 'fridge' ? 'keeps 2-3 days'
+                    : 'eat fresh'}
                 </span>
               </span>
               <span style={{ color: 'var(--muted)' }}>{open ? '▲' : '▼'}</span>

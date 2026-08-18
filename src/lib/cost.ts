@@ -1,6 +1,9 @@
 import type { PriceBook } from './prices'
 import type { Ingredient, PlanSetup, Recipe } from '../types'
-import { AISLE_ORDER, AISLE_LABEL, mainMeals, type Aisle } from '../types'
+import {
+  AISLE_ORDER, AISLE_LABEL, KEEPS_RANK, mainMeals,
+  type Aisle, type Keeps,
+} from '../types'
 
 /** A recipe you picked, and how many portions of it you want to end up with. */
 export interface Selection {
@@ -149,39 +152,104 @@ export function portionsForRecipe(recipe: Recipe, target: number): number {
   return batches * recipe.baseServings
 }
 
+// --- the shape of a week ----------------------------------------------------
+//
+// A week isn't a uniform pile of meals, it's a set of COOKS. What each cook has
+// to satisfy comes from one question: how long does the food have to survive?
+//
+//   1 portion   - you eat it tonight. Anything goes.
+//   2 portions  - tonight and tomorrow. It has to be decent from the fridge.
+//   3+ portions - cooked Sunday, eaten Thursday. It has to freeze.
+//
+// That's derived, not asked. The app already knows the portions per cook, so it
+// can rule out the smash burger for a Sunday batch without a questionnaire.
+
+export interface Slot {
+  index: number
+  kind: 'main' | 'breakfast'
+  /** Portions this cook is meant to produce. */
+  portions: number
+  /** The minimum a recipe must survive to fill this slot. */
+  needs: Keeps
+  /** Filled once you pick something for it. */
+  recipeId?: string
+}
+
+function needsFor(portions: number): Keeps {
+  if (portions <= 1) return 'fresh'
+  if (portions === 2) return 'fridge'
+  return 'freezer'
+}
+
+/** Can this recipe survive long enough to fill this slot? */
+export function fitsSlot(recipe: Recipe, slot: Slot): boolean {
+  return KEEPS_RANK[recipe.keeps] >= KEEPS_RANK[slot.needs]
+}
+
+const isBreakfast = (r: Recipe) => r.tags.includes('breakfast')
+
 /**
- * Turn what you've picked into portions. This is the ONLY place that decides
- * how much of each recipe gets cooked, so the shopping list, the costs and the
- * week screen can never disagree with each other.
- *
- * Mains split the lunches and dinners between them; breakfasts are separate and
- * never eat into that count.
+ * The week broken into cooks, with your picks slotted in. This is the single
+ * description of a plan - the deck fills it, the week screen reads it, and
+ * buildSelections turns it into portions. Nothing else gets to have an opinion.
+ */
+export function planSlots(
+  setup: PlanSetup,
+  recipeBook: Record<string, Recipe>,
+  liked: string[],
+): Slot[] {
+  const meals = mainMeals(setup)
+  const cooks = Math.max(1, setup.recipeCount)
+  const slots: Slot[] = []
+
+  // Spread the meals across the cooks, remainder to the earlier ones.
+  for (let i = 0; i < cooks; i++) {
+    const portions = Math.floor(meals / cooks) + (i < meals % cooks ? 1 : 0)
+    slots.push({ index: i, kind: 'main', portions, needs: needsFor(portions) })
+  }
+
+  if (setup.breakfasts > 0) {
+    // Breakfast gets made fresh each morning, so it never needs to keep.
+    slots.push({
+      index: slots.length,
+      kind: 'breakfast',
+      portions: setup.breakfasts,
+      needs: 'fresh',
+    })
+  }
+
+  const picked = liked.map(id => recipeBook[id]).filter(Boolean)
+  const mains = picked.filter(r => !isBreakfast(r))
+  const breakfasts = picked.filter(isBreakfast)
+  let m = 0
+  let b = 0
+  for (const slot of slots) {
+    if (slot.kind === 'main' && mains[m]) slot.recipeId = mains[m++].id
+    else if (slot.kind === 'breakfast' && breakfasts[b]) slot.recipeId = breakfasts[b++].id
+  }
+  return slots
+}
+
+/** The slot the deck is currently filling, or null when the week is full. */
+export function nextSlot(slots: Slot[]): Slot | null {
+  return slots.find(s => !s.recipeId) ?? null
+}
+
+/**
+ * Turn a plan into portions. Reads the slots so the shopping list, the costs
+ * and the saved session can never disagree about how much gets cooked.
  */
 export function buildSelections(
   setup: PlanSetup,
   liked: string[],
   recipeBook: Record<string, Recipe>,
 ): Selection[] {
-  const isBreakfast = (r: Recipe) => r.tags.includes('breakfast')
-  const picked = liked.map(id => recipeBook[id]).filter(Boolean)
-
-  const mains = picked.filter(r => !isBreakfast(r)).slice(0, setup.recipeCount)
-  const target = mainMeals(setup) / Math.max(1, mains.length)
-  const out: Selection[] = mains.map(r => ({
-    recipeId: r.id,
-    portions: portionsForRecipe(r, target),
-  }))
-
-  if (setup.breakfasts > 0) {
-    const breakfast = picked.find(isBreakfast)
-    if (breakfast) {
-      out.push({
-        recipeId: breakfast.id,
-        portions: portionsForRecipe(breakfast, setup.breakfasts),
-      })
-    }
-  }
-  return out
+  return planSlots(setup, recipeBook, liked)
+    .filter(s => s.recipeId)
+    .map(s => ({
+      recipeId: s.recipeId!,
+      portions: portionsForRecipe(recipeBook[s.recipeId!], s.portions),
+    }))
 }
 
 /** Typical batch size of the recipes you could actually cook. */

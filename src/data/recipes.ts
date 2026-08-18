@@ -21,6 +21,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['high_protein', 'batch_freeze', 'spicy', 'one_pot', 'no_pork', 'no_fish'],
     proteinPerServing: 32,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'beefmince', qty: 500 },
       { ingredientId: 'onion', qty: 1 },
@@ -62,6 +63,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['oven'],
     tags: ['high_protein', 'one_pot', 'no_pork', 'no_fish', 'no_beef'],
     proteinPerServing: 38,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'chickenthgh', qty: 800 },
       { ingredientId: 'potato', qty: 800 },
@@ -94,6 +96,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['cheapest', 'quick', 'veggie', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 18,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'pasta', qty: 200 },
       { ingredientId: 'choptom', qty: 400 },
@@ -128,6 +131,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['airfryer'],
     tags: ['high_protein', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 45,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'chickenbrst', qty: 400 },
       { ingredientId: 'potato', qty: 500 },
@@ -157,6 +161,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['cheapest', 'veggie', 'batch_freeze', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 20,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'lentils', qty: 300 },
       { ingredientId: 'onion', qty: 1 },
@@ -195,6 +200,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob', 'oven'],
     tags: ['high_protein', 'batch_freeze', 'no_pork', 'no_beef'],
     proteinPerServing: 34,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'pasta', qty: 400 },
       { ingredientId: 'tuna', qty: 290 },
@@ -230,6 +236,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['veggie', 'batch_freeze', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 16,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'chickpea', qty: 800 },
       { ingredientId: 'sweetpotato', qty: 500 },
@@ -267,6 +274,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['microwave'],
     tags: ['quick', 'cheapest', 'veggie', 'one_pot', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 17,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'rice', qty: 150 },
       { ingredientId: 'butter', qty: 10 },
@@ -298,6 +306,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['cheapest', 'batch_freeze', 'one_pot', 'no_beef', 'no_fish'],
     proteinPerServing: 24,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'sausages', qty: 8 },
       { ingredientId: 'bakedbean', qty: 800 },
@@ -331,6 +340,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob', 'kettle'],
     tags: ['breakfast', 'quick', 'cheapest', 'veggie', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 19,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'noodles', qty: 150 },
       { ingredientId: 'peanutbtr', qty: 60 },
@@ -362,6 +372,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['quick', 'high_protein', 'no_beef', 'no_fish'],
     proteinPerServing: 42,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'pasta', qty: 200 },
       { ingredientId: 'bacon', qty: 150 },
@@ -395,6 +406,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['high_protein', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 38,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'chickenbrst', qty: 500 },
       { ingredientId: 'pepper', qty: 2 },
@@ -429,6 +441,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['high_protein', 'batch_freeze', 'no_pork', 'no_fish'],
     proteinPerServing: 48,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'beefmince', qty: 500 },
       { ingredientId: 'kidneybean', qty: 400 },
@@ -466,6 +479,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['cheapest', 'batch_freeze', 'no_beef', 'no_fish'],
     proteinPerServing: 26,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'sausages', qty: 6 },
       { ingredientId: 'pasta', qty: 400 },
@@ -500,6 +514,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['veggie', 'cheapest', 'batch_freeze', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 29,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'lentils', qty: 250 },
       { ingredientId: 'choptom', qty: 800 },
@@ -535,6 +550,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['veggie', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 15,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'mushroom', qty: 250 },
       { ingredientId: 'onion', qty: 1 },
@@ -569,6 +585,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['high_protein', 'spicy', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 36,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'chickenbrst', qty: 500 },
       { ingredientId: 'currypaste', qty: 60 },
@@ -603,6 +620,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob', 'oven'],
     tags: ['high_protein', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 48,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'chickenbrst', qty: 600 },
       { ingredientId: 'breadcrumbs', qty: 100 },
@@ -642,6 +660,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['quick', 'cheapest', 'high_protein', 'no_pork', 'no_beef'],
     proteinPerServing: 30,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'pasta', qty: 200 },
       { ingredientId: 'tuna', qty: 145 },
@@ -671,6 +690,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['batch_freeze', 'one_pot', 'spicy', 'no_beef', 'no_fish'],
     proteinPerServing: 24,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'chorizo', qty: 200 },
       { ingredientId: 'chickpea', qty: 800 },
@@ -704,6 +724,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['oven', 'hob'],
     tags: ['veggie', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 28,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'feta', qty: 200 },
       { ingredientId: 'cherrytom', qty: 400 },
@@ -737,6 +758,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['oven'],
     tags: ['cheapest', 'one_pot', 'no_beef', 'no_fish'],
     proteinPerServing: 18,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'sausages', qty: 8 },
       { ingredientId: 'potato', qty: 800 },
@@ -768,6 +790,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['oven'],
     tags: ['cheapest', 'veggie', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 26,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'potato', qty: 600 },
       { ingredientId: 'bakedbean', qty: 400 },
@@ -797,6 +820,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['oven'],
     tags: ['high_protein', 'one_pot', 'no_pork', 'no_beef'],
     proteinPerServing: 34,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'salmon', qty: 480 },
       { ingredientId: 'potato', qty: 800 },
@@ -828,6 +852,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob', 'oven'],
     tags: ['high_protein', 'batch_freeze', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 53,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'chickenbrst', qty: 500 },
       { ingredientId: 'pasta', qty: 400 },
@@ -862,6 +887,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['airfryer'],
     tags: ['veggie', 'high_protein', 'quick', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 35,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'halloumi', qty: 225 },
       { ingredientId: 'pepper', qty: 1 },
@@ -894,6 +920,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['airfryer'],
     tags: ['high_protein', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 62,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'chickenbrst', qty: 400 },
       { ingredientId: 'breadcrumbs', qty: 80 },
@@ -927,6 +954,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['airfryer'],
     tags: ['high_protein', 'quick', 'no_pork', 'no_beef'],
     proteinPerServing: 36,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'salmon', qty: 240 },
       { ingredientId: 'potato', qty: 400 },
@@ -956,6 +984,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['microwave'],
     tags: ['quick', 'high_protein', 'no_pork', 'no_beef'],
     proteinPerServing: 52,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'potato', qty: 600 },
       { ingredientId: 'tuna', qty: 290 },
@@ -984,6 +1013,7 @@ export const RECIPES: Recipe[] = [
     equipment: [],
     tags: ['quick', 'cheapest', 'veggie', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 19,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'oats', qty: 100 },
       { ingredientId: 'milk', qty: 300 },
@@ -1014,6 +1044,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['high_protein', 'no_pork', 'no_fish'],
     proteinPerServing: 50,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'beefmince', qty: 400 },
       { ingredientId: 'onion', qty: 0.5 },
@@ -1048,6 +1079,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['high_protein', 'batch_freeze', 'one_pot', 'no_pork', 'no_fish'],
     proteinPerServing: 38,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'beefmince', qty: 400 },
       { ingredientId: 'onion', qty: 0.5 },
@@ -1079,6 +1111,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['high_protein', 'batch_freeze', 'no_pork', 'no_fish'],
     proteinPerServing: 54,
+    keeps: 'freezer',
     ingredients: [
       { ingredientId: 'beefmince', qty: 400 },
       { ingredientId: 'onion', qty: 0.5 },
@@ -1114,6 +1147,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['high_protein', 'quick', 'one_pot', 'no_pork', 'no_fish'],
     proteinPerServing: 55,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'beefmince', qty: 400 },
       { ingredientId: 'onion', qty: 0.5 },
@@ -1147,6 +1181,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['high_protein', 'quick', 'one_pot', 'no_pork', 'no_fish'],
     proteinPerServing: 46,
+    keeps: 'fridge',
     ingredients: [
       { ingredientId: 'beefmince', qty: 400 },
       { ingredientId: 'onion', qty: 0.5 },
@@ -1177,6 +1212,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['microwave'],
     tags: ['breakfast', 'quick', 'cheapest', 'veggie', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 16,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'oats', qty: 100 },
       { ingredientId: 'milk', qty: 400 },
@@ -1203,6 +1239,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['breakfast', 'quick', 'cheapest', 'veggie', 'high_protein', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 26,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'eggs', qty: 5 },
       { ingredientId: 'bread', qty: 160 },
@@ -1232,6 +1269,7 @@ export const RECIPES: Recipe[] = [
     equipment: ['hob'],
     tags: ['breakfast', 'quick', 'high_protein', 'no_beef', 'no_fish'],
     proteinPerServing: 28,
+    keeps: 'fresh',
     ingredients: [
       { ingredientId: 'eggs', qty: 4 },
       { ingredientId: 'wraps', qty: 2 },

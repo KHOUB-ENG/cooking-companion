@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { INGREDIENTS } from './data/ingredients'
 import { buildSelections } from './lib/cost'
 import { buildPriceBook, editedCount } from './lib/prices'
-import { bookAsList, buildRecipeBook, isRecipeEdited } from './lib/recipeEdits'
+import { blankRecipe, bookList, buildRecipeBook, isRecipeEdited } from './lib/recipeEdits'
 import { createSession, shoppingProgress } from './lib/sessions'
 import { exportData, useAppState, type Step } from './lib/store'
 import { CookScreen } from './screens/Cook'
@@ -22,8 +22,9 @@ const STEPS: Step[] = ['goals', 'equipment', 'plan', 'swipe', 'week']
 
 export default function App() {
   const {
-    state, patchSetup, like, pass, resetSwipes,
+    state, patchSetup, like, pass, unlike, resetSwipes,
     setPrice, resetPrices, setRecipeEdit, resetRecipe,
+    addCustomRecipe, deleteCustomRecipe,
     addSession, deleteSession, toggleIn, setPantry,
   } = useAppState()
   const [step, setStep] = useState<Step>('home')
@@ -35,8 +36,18 @@ export default function App() {
   // Your corrections, layered over what ships in the code. Everything that
   // costs or cooks reads from these, never from the raw data files.
   const book = useMemo(() => buildPriceBook(state.prices), [state.prices])
-  const recipeBook = useMemo(() => buildRecipeBook(state.recipeEdits), [state.recipeEdits])
-  const recipeList = useMemo(() => bookAsList(recipeBook), [recipeBook])
+  const recipeBook = useMemo(
+    () => buildRecipeBook(state.recipeEdits, state.customRecipes),
+    [state.recipeEdits, state.customRecipes],
+  )
+  const recipeList = useMemo(
+    () => bookList(recipeBook, state.customRecipes),
+    [recipeBook, state.customRecipes],
+  )
+  const customIds = useMemo(
+    () => new Set(state.customRecipes.map(r => r.id)),
+    [state.customRecipes],
+  )
   const editedRecipes = useMemo(
     () => new Set(Object.keys(state.recipeEdits).filter(id => isRecipeEdited(state.recipeEdits, id))),
     [state.recipeEdits],
@@ -209,7 +220,13 @@ export default function App() {
           recipes={recipeList}
           book={book}
           editedRecipes={editedRecipes}
+          customIds={customIds}
           onEdit={openEditor}
+          onNew={() => {
+            const fresh = blankRecipe()
+            addCustomRecipe(fresh)
+            openEditor(fresh.id)
+          }}
           onBack={() => setStep('home')}
         />
       </div>
@@ -222,8 +239,10 @@ export default function App() {
         <EditRecipeScreen
           recipe={recipeBook[editingId]}
           edited={editedRecipes.has(editingId)}
+          isCustom={customIds.has(editingId)}
           onSave={setRecipeEdit}
           onReset={resetRecipe}
+          onDelete={deleteCustomRecipe}
           onClose={() => { setEditingId(null); setStep(returnTo) }}
         />
       </div>
@@ -251,7 +270,9 @@ export default function App() {
           passed={state.passed}
           onLike={like}
           onPass={pass}
+          onUnlike={unlike}
           onReset={resetSwipes}
+          onBuild={() => setStep('week')}
         />
       )}
 
@@ -285,7 +306,7 @@ export default function App() {
         ) : (
           <button className="btn" disabled={!canAdvance} onClick={() => go(1)}>
             {step === 'swipe'
-              ? `Build my week (${state.liked.length})`
+              ? 'Build my week'
               : step === 'plan'
                 ? 'Start swiping'
                 : 'Next'}
