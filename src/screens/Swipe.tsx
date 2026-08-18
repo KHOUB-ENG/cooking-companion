@@ -3,7 +3,7 @@ import type { PlanSetup, Recipe } from '../types'
 import { EQUIPMENT_ICON } from '../types'
 import {
   costPerPortion, filterRecipes, marginalCost, money, portionsForRecipe,
-  rankRecipes, type Marginal, type Selection,
+  rankRecipes, buildSelections, type Marginal, type Selection,
 } from '../lib/cost'
 import type { PriceBook } from '../lib/prices'
 
@@ -32,35 +32,45 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
   )
 
   /** What's already in the trolley, so new cards can be priced against it. */
-  const already: Selection[] = useMemo(() => {
-    const target = setup.days / Math.max(1, setup.recipeCount)
-    return liked
-      .slice(0, setup.recipeCount)
-      .map(id => recipeById[id])
-      .filter(Boolean)
-      .map(r => ({ recipeId: r.id, portions: portionsForRecipe(r, target) }))
-  }, [liked, setup.days, setup.recipeCount, recipeById])
+  const already: Selection[] = useMemo(
+    () => buildSelections(setup, liked, recipeById),
+    [setup, liked, recipeById],
+  )
+
+  const isBreakfast = (r: Recipe) => r.tags.includes('breakfast')
+  const mainsPicked = liked.filter(id => recipeById[id] && !isBreakfast(recipeById[id])).length
+  const breakfastPicked = liked.some(id => recipeById[id] && isBreakfast(recipeById[id]))
+
+  /**
+   * Breakfasts are their own course. Porridge shouldn't turn up while you're
+   * picking dinners, so mains come first and the deck only switches over once
+   * you've got enough of them.
+   */
+  const pickingBreakfast =
+    setup.breakfasts > 0 && !breakfastPicked && mainsPicked >= setup.recipeCount
 
   const queue = useMemo(() => {
     const eligible = filterRecipes(recipes, setup, search)
+      .filter(r => (pickingBreakfast ? isBreakfast(r) : !isBreakfast(r)))
     const ranked = rankRecipes(eligible, setup, book, already, recipeById)
     return ranked.filter(r => !liked.includes(r.id) && !passed.includes(r.id))
-  }, [recipes, setup, book, search, liked, passed, already, recipeById])
+  }, [recipes, setup, book, search, liked, passed, already, recipeById, pickingBreakfast])
 
   /** How much the card on top would actually add to the shop. */
   const topMarginal: Marginal | null = useMemo(() => {
     const top = queue[0]
     if (!top || already.length === 0) return null
-    const target = setup.days / Math.max(1, setup.recipeCount)
+    const target = pickingBreakfast
+      ? setup.breakfasts
+      : (setup.lunches + setup.dinners) / Math.max(1, setup.recipeCount)
     return marginalCost(
       already,
       { recipeId: top.id, portions: portionsForRecipe(top, target) },
       recipeById,
       book,
     )
-  }, [queue, already, setup.days, setup.recipeCount, recipeById, book])
+  }, [queue, already, setup, pickingBreakfast, recipeById, book])
 
-  const enough = liked.length >= setup.recipeCount
   const top = queue[0]
   const next = queue[1]
 
@@ -138,9 +148,16 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
 
   return (
     <div className="screen">
+      {pickingBreakfast && (
+        <div className="deck-banner">
+          Mains sorted. Now pick a breakfast for your {setup.breakfasts}{' '}
+          {setup.breakfasts === 1 ? 'morning' : 'mornings'}.
+        </div>
+      )}
+
       <input
         className="search"
-        placeholder="Fancy something in particular?"
+        placeholder={pickingBreakfast ? 'Search breakfasts' : 'Fancy something in particular?'}
         value={search}
         onChange={e => setSearch(e.target.value)}
       />
@@ -174,7 +191,8 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
       </div>
 
       <p className="tiny">
-        {liked.length} picked{enough ? ' — enough for your plan' : ` of ${setup.recipeCount}`}
+        {mainsPicked} of {setup.recipeCount} mains
+        {setup.breakfasts > 0 && (breakfastPicked ? ' · breakfast sorted' : ' · breakfast still to pick')}
         {' · '}{queue.length} left to look at
       </p>
     </div>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { DEFAULT_SETUP, type PlanSetup } from '../types'
-import type { Selection } from './cost'
+import type { Pantry, Selection } from './cost'
 import type { Overrides, PriceOverride } from './prices'
 import type { RecipeOverride, RecipeOverrides } from './recipeEdits'
 import { MAX_SESSIONS, type Session } from './sessions'
@@ -41,6 +41,11 @@ export interface AppState {
   sessions: Session[]
   /** The one you're currently shopping for and cooking from. */
   currentSessionId: string | null
+  /**
+   * What's in your cupboard. Remembered across weeks - buy olive oil once and
+   * you shouldn't be asked about it every Sunday.
+   */
+  pantry: Pantry
 }
 
 const EMPTY: AppState = {
@@ -53,14 +58,24 @@ const EMPTY: AppState = {
   recipeEdits: {},
   sessions: [],
   currentSessionId: null,
+  pantry: {},
 }
 
 function load(): AppState {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return EMPTY
-    // Merge over EMPTY so adding a field later never breaks an old save.
-    return { ...EMPTY, ...JSON.parse(raw) }
+    const saved = JSON.parse(raw) as Partial<AppState>
+
+    // Merge over the defaults so adding a field later never breaks an old save.
+    // `setup` needs its own merge, not the top-level one: a save written before
+    // lunches/dinners existed would otherwise replace the whole object and
+    // leave those fields undefined, which reaches the UI as NaN.
+    return {
+      ...EMPTY,
+      ...saved,
+      setup: { ...DEFAULT_SETUP, ...(saved.setup ?? {}) },
+    }
   } catch {
     return EMPTY
   }
@@ -163,6 +178,15 @@ export function useAppState() {
     }))
   }, [])
 
+  const setPantry = useCallback((id: string, have: boolean | undefined) => {
+    setState(s => {
+      const pantry = { ...s.pantry }
+      if (have === undefined) delete pantry[id]
+      else pantry[id] = have
+      return { ...s, pantry }
+    })
+  }, [])
+
   const setCurrentSession = useCallback((id: string | null) => {
     setState(s => ({ ...s, currentSessionId: id }))
   }, [])
@@ -178,7 +202,7 @@ export function useAppState() {
   return {
     state, setState, patchSetup, like, pass, resetSwipes, setSelections,
     setPrice, resetPrices, setRecipeEdit, resetRecipe,
-    addSession, updateSession, deleteSession, toggleIn, setCurrentSession,
+    addSession, updateSession, deleteSession, toggleIn, setCurrentSession, setPantry,
   }
 }
 

@@ -1,8 +1,9 @@
 import {
   DIET_LABEL, EQUIPMENT_ICON, EQUIPMENT_LABEL, GOAL_LABEL,
+  mainMeals,
   type Diet, type Equipment, type Goal, type PlanSetup, type Recipe,
 } from '../types'
-import { filterRecipes, money, shapeAdvice } from '../lib/cost'
+import { filterRecipes, shapeAdvice } from '../lib/cost'
 
 interface Props {
   setup: PlanSetup
@@ -120,23 +121,27 @@ export function PlanScreen({ setup, patch, recipes }: PlanProps) {
   return (
     <div className="screen">
       <h1>How much cooking?</h1>
-      <p className="sub">Fewer recipes over more days means batch cooking — cheaper, and far less washing up.</p>
+      <p className="sub">Count the meals you actually need covered. Fewer recipes over more meals means batch cooking — cheaper, and far less washing up.</p>
 
       <Stepper
-        label="Days to cover" hint="Meals you need sorted"
-        value={setup.days} min={1} max={7}
-        onChange={v => patch({ days: v })}
+        label="Lunches" hint="Meals you need for the day"
+        value={setup.lunches} min={0} max={14}
+        onChange={v => patch({ lunches: v })}
+      />
+      <Stepper
+        label="Dinners" hint="Proper evening meals"
+        value={setup.dinners} min={0} max={14}
+        onChange={v => patch({ dinners: v })}
+      />
+      <Stepper
+        label="Breakfasts" hint="Optional — picked from breakfast recipes"
+        value={setup.breakfasts} min={0} max={14}
+        onChange={v => patch({ breakfasts: v })}
       />
       <Stepper
         label="Different recipes" hint="How much variety you want"
         value={setup.recipeCount} min={1} max={5}
         onChange={v => patch({ recipeCount: v })}
-      />
-      <Stepper
-        label="Budget" hint="For the whole shop"
-        value={setup.budget} min={500} max={8000} step={250}
-        format={money}
-        onChange={v => patch({ budget: v })}
       />
 
       <div
@@ -166,7 +171,8 @@ export function PlanScreen({ setup, patch, recipes }: PlanProps) {
         )}
 
         <div style={{ color: 'var(--muted)', fontSize: 14, marginTop: 10 }}>
-          Roughly {money(Math.round(setup.budget / setup.days))} a day.
+          {mainMeals(setup)} main {mainMeals(setup) === 1 ? 'meal' : 'meals'}
+          {setup.breakfasts > 0 && `, plus ${setup.breakfasts} ${setup.breakfasts === 1 ? 'breakfast' : 'breakfasts'}`}.
         </div>
       </div>
     </div>

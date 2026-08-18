@@ -1,6 +1,6 @@
 import type { PriceBook } from './prices'
 import type { Ingredient, PlanSetup, Recipe } from '../types'
-import { AISLE_ORDER, AISLE_LABEL, type Aisle } from '../types'
+import { AISLE_ORDER, AISLE_LABEL, mainMeals, type Aisle } from '../types'
 
 /** A recipe you picked, and how many portions of it you want to end up with. */
 export interface Selection {
@@ -22,6 +22,8 @@ export interface BasketLine {
   leftover: number
   /** Which of your recipes need this. Drives the leftover-chaining hints. */
   usedBy: string[]
+  /** Is this actually going in the trolley? Cupboard staples usually are not. */
+  inShop: boolean
 }
 
 export interface Basket {
@@ -56,10 +58,19 @@ export function scaledQty(recipe: Recipe, qty: number, portions: number): number
  * Everyone else only shows you the second number, which is why their
  * "£1.20 a portion" never matches your receipt.
  */
+/**
+ * Your cupboard. `true` means you already have it, `false` means you told the
+ * app you need to buy it. Anything missing has not been asked about yet, and
+ * is kept out of the shop until you answer - guessing would quietly inflate
+ * every total with olive oil you already own.
+ */
+export type Pantry = Record<string, boolean | undefined>
+
 export function buildBasket(
   selections: Selection[],
   recipeById: Record<string, Recipe>,
   book: PriceBook,
+  pantry: Pantry = {},
 ): Basket {
   const needed = new Map<string, { qty: number; usedBy: string[] }>()
 
@@ -90,6 +101,9 @@ export function buildBasket(
     const eatenCost = Math.round((entry.qty / ingredient.pack.size) * ingredient.pack.price)
     const leftover = packs * ingredient.pack.size - entry.qty
 
+    // A staple only joins the shop once you've said you need it.
+    const inShop = !ingredient.staple || pantry[ingredient.id] === false
+
     lines.push({
       ingredient,
       needed: entry.qty,
@@ -98,14 +112,15 @@ export function buildBasket(
       eatenCost,
       leftover,
       usedBy: entry.usedBy,
+      inShop,
     })
 
-    if (ingredient.staple) {
-      stapleTotal += buyCost
-    } else {
+    if (inShop) {
       buyTotal += buyCost
       eatenTotal += eatenCost
       leftoverValue += buyCost - eatenCost
+    } else {
+      stapleTotal += buyCost
     }
   }
 
@@ -134,6 +149,41 @@ export function portionsForRecipe(recipe: Recipe, target: number): number {
   return batches * recipe.baseServings
 }
 
+/**
+ * Turn what you've picked into portions. This is the ONLY place that decides
+ * how much of each recipe gets cooked, so the shopping list, the costs and the
+ * week screen can never disagree with each other.
+ *
+ * Mains split the lunches and dinners between them; breakfasts are separate and
+ * never eat into that count.
+ */
+export function buildSelections(
+  setup: PlanSetup,
+  liked: string[],
+  recipeBook: Record<string, Recipe>,
+): Selection[] {
+  const isBreakfast = (r: Recipe) => r.tags.includes('breakfast')
+  const picked = liked.map(id => recipeBook[id]).filter(Boolean)
+
+  const mains = picked.filter(r => !isBreakfast(r)).slice(0, setup.recipeCount)
+  const target = mainMeals(setup) / Math.max(1, mains.length)
+  const out: Selection[] = mains.map(r => ({
+    recipeId: r.id,
+    portions: portionsForRecipe(r, target),
+  }))
+
+  if (setup.breakfasts > 0) {
+    const breakfast = picked.find(isBreakfast)
+    if (breakfast) {
+      out.push({
+        recipeId: breakfast.id,
+        portions: portionsForRecipe(breakfast, setup.breakfasts),
+      })
+    }
+  }
+  return out
+}
+
 /** Typical batch size of the recipes you could actually cook. */
 export function averageServings(recipes: Recipe[]): number {
   if (recipes.length === 0) return 4
@@ -141,11 +191,11 @@ export function averageServings(recipes: Recipe[]): number {
 }
 
 /**
- * How many different recipes this many days actually wants. More than this and
+ * How many different recipes this many meals actually wants. More than this and
  * you are cooking small batches of everything and binning the difference.
  */
-export function recommendRecipeCount(days: number, avgServings: number): number {
-  return Math.max(1, Math.min(5, Math.round(days / avgServings)))
+export function recommendRecipeCount(meals: number, avgServings: number): number {
+  return Math.max(1, Math.min(5, Math.round(meals / avgServings)))
 }
 
 export interface ShapeAdvice {
@@ -159,21 +209,22 @@ export interface ShapeAdvice {
 }
 
 export function shapeAdvice(setup: PlanSetup, eligible: Recipe[]): ShapeAdvice {
+  const meals = mainMeals(setup)
   const avg = averageServings(eligible)
-  const recommended = recommendRecipeCount(setup.days, avg)
-  const target = setup.days / setup.recipeCount
+  const recommended = recommendRecipeCount(meals, avg)
+  const target = meals / setup.recipeCount
   const totalPortions = Math.round(
     setup.recipeCount * Math.max(1, Math.round(target / avg)) * avg,
   )
-  const spare = totalPortions - setup.days
+  const spare = totalPortions - meals
 
   if (setup.recipeCount > recommended) {
     return {
       recommended, totalPortions, spare, level: 'over',
-      message: `${setup.recipeCount} recipes over ${setup.days} days means small batches of each, so you buy full packs and use a fraction. ${recommended} would cover it with far less waste.`,
+      message: `${setup.recipeCount} recipes for ${meals} meals means small batches of each, so you buy full packs and use a fraction. ${recommended} would cover it with far less waste.`,
     }
   }
-  if (spare > setup.days) {
+  if (spare > meals) {
     return {
       recommended, totalPortions, spare, level: 'under',
       message: `That leaves ${spare} spare portions. Fine if you'll freeze them, wasteful if you won't.`,
@@ -183,8 +234,8 @@ export function shapeAdvice(setup: PlanSetup, eligible: Recipe[]): ShapeAdvice {
     recommended, totalPortions, spare,
     level: 'good',
     message: spare > 0
-      ? `${totalPortions} portions - covers your ${setup.days} days with ${spare} spare for the freezer.`
-      : `${totalPortions} portions, covering ${setup.days} days.`,
+      ? `${totalPortions} portions - covers your ${meals} meals with ${spare} spare for the freezer.`
+      : `${totalPortions} portions, covering all ${meals} meals.`,
   }
 }
 
@@ -200,7 +251,7 @@ export function groupByAisle(basket: Basket): AisleGroup[] {
     .map(aisle => ({
       aisle,
       label: AISLE_LABEL[aisle],
-      lines: basket.lines.filter(l => l.ingredient.aisle === aisle && !l.ingredient.staple),
+      lines: basket.lines.filter(l => l.ingredient.aisle === aisle && l.inShop),
     }))
     .filter(g => g.lines.length > 0)
 }
@@ -320,7 +371,7 @@ export function rankRecipes(
   recipeById: Record<string, Recipe> = {},
 ): Recipe[] {
   const overlapAware = already.length > 0
-  const target = setup.days / Math.max(1, setup.recipeCount)
+  const target = mainMeals(setup) / Math.max(1, setup.recipeCount)
 
   const scored = recipes.map(recipe => {
     let score = 0

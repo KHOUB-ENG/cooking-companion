@@ -20,6 +20,7 @@ export const INGREDIENTS: Ingredient[] = [
   { id: 'spinach', name: 'Spinach', aisle: 'fruit_veg', unit: 'g', pack: { size: 250, price: 145 }, packLabel: '250g bag' },
   { id: 'courgette', name: 'Courgettes', aisle: 'fruit_veg', unit: 'each', pack: { size: 2, price: 89 }, packLabel: '2 pack' },
   { id: 'ginger', name: 'Ginger', aisle: 'fruit_veg', unit: 'g', pack: { size: 100, price: 45 }, packLabel: 'a knob (about 100g)' },
+  { id: 'banana', name: 'Bananas', aisle: 'fruit_veg', unit: 'each', pack: { size: 5, price: 79 }, packLabel: '5 pack' },
   { id: 'lemon', name: 'Lemons', aisle: 'fruit_veg', unit: 'each', pack: { size: 4, price: 95 }, packLabel: '4 pack' },
 
   // --- bakery --------------------------------------------------------------

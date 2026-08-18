@@ -566,3 +566,37 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
   border-top: 1px solid var(--line);
 }
 .cook-nav .btn { padding: 18px; font-size: 18px; }
+
+/* --- cupboard check ----------------------------------------------------- */
+
+.cupboard-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--line);
+}
+.cupboard-row:last-of-type { border-bottom: none; }
+.cupboard-row .text { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.cupboard-row .n { font-weight: 550; }
+.cupboard-row .d { color: var(--muted); font-size: 13px; }
+.cupboard-row.ask .n::after {
+  content: '';
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); margin-left: 7px; vertical-align: middle;
+}
+
+.cupboard-row .choice { display: flex; gap: 6px; flex: 0 0 auto; }
+.cupboard-row .choice button {
+  padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  background: var(--surface-2); border: 1.5px solid var(--line); color: var(--muted);
+}
+.cupboard-row .choice button.on {
+  border-color: var(--yes); color: var(--yes); background: transparent;
+}
+.cupboard-row .choice button.on.need { border-color: var(--accent); color: var(--accent); }
+
+/* --- deck banner -------------------------------------------------------- */
+
+.deck-banner {
+  background: var(--accent-soft); color: var(--accent);
+  border-radius: var(--radius); padding: 12px 14px; margin-bottom: 12px;
+  font-size: 14px; font-weight: 600;
+}

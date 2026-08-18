@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { INGREDIENTS } from './data/ingredients'
-import { portionsForRecipe, type Selection } from './lib/cost'
+import { buildSelections } from './lib/cost'
 import { buildPriceBook, editedCount } from './lib/prices'
 import { bookAsList, buildRecipeBook, isRecipeEdited } from './lib/recipeEdits'
 import { createSession, shoppingProgress } from './lib/sessions'
@@ -24,7 +24,7 @@ export default function App() {
   const {
     state, patchSetup, like, pass, resetSwipes,
     setPrice, resetPrices, setRecipeEdit, resetRecipe,
-    addSession, deleteSession, toggleIn,
+    addSession, deleteSession, toggleIn, setPantry,
   } = useAppState()
   const [step, setStep] = useState<Step>('home')
   const [returnTo, setReturnTo] = useState<Step>('home')
@@ -79,14 +79,9 @@ export default function App() {
 
   /** Freeze the current plan into a session and go straight to shopping. */
   const saveWeek = () => {
-    const chosen = state.liked.slice(0, state.setup.recipeCount)
-    const target = state.setup.days / Math.max(1, chosen.length)
-    const selections: Selection[] = chosen
-      .map(id => recipeBook[id])
-      .filter(Boolean)
-      .map(r => ({ recipeId: r.id, portions: portionsForRecipe(r, target) }))
+    const selections = buildSelections(state.setup, state.liked, recipeBook)
     if (selections.length === 0) return
-    const session = createSession('week', state.setup, selections, recipeBook, book)
+    const session = createSession('week', state.setup, selections, recipeBook, book, state.pantry)
     addSession(session)
     setViewingId(session.id)
     setReturnTo('home')
@@ -95,7 +90,7 @@ export default function App() {
 
   const cookSingle = (recipeId: string, portions: number) => {
     const session = createSession(
-      'single', state.setup, [{ recipeId, portions }], recipeBook, book,
+      'single', state.setup, [{ recipeId, portions }], recipeBook, book, state.pantry,
     )
     addSession(session)
     setViewingId(session.id)
@@ -266,8 +261,10 @@ export default function App() {
           liked={state.liked}
           recipeById={recipeBook}
           book={book}
+          pantry={state.pantry}
           corrected={corrected}
           editedRecipes={editedRecipes}
+          onSetPantry={setPantry}
           onBack={() => setStep('swipe')}
           onCheckPrices={() => openAside('prices')}
           onEditRecipe={openEditor}

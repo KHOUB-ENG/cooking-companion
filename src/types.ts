@@ -81,7 +81,7 @@ export const DIET_LABEL: Record<Diet, string> = {
   no_nuts: 'No nuts',
 }
 
-export type Tag = Goal | Diet | 'spicy' | 'one_pot'
+export type Tag = Goal | Diet | 'spicy' | 'one_pot' | 'breakfast'
 
 export interface RecipeIngredient {
   ingredientId: string
@@ -116,19 +116,29 @@ export interface PlanSetup {
   goals: Goal[]
   diets: Diet[]
   equipment: Equipment[]
-  /** How many days you're cooking for. */
-  days: number
-  /** How many DIFFERENT recipes. 2 recipes x 5 days = batch cooking. */
+  /**
+   * Meals you need covered, counted as meals rather than days - two dinners
+   * and two lunches is four portions, however they fall across the week.
+   */
+  lunches: number
+  dinners: number
+  /** Breakfasts are picked separately, from breakfast recipes only. */
+  breakfasts: number
+  /** How many DIFFERENT main recipes. Fewer over more meals = batch cooking. */
   recipeCount: number
-  /** Weekly budget in pence. */
-  budget: number
+}
+
+/** Lunches + dinners. Breakfasts are planned on their own. */
+export function mainMeals(setup: PlanSetup): number {
+  return setup.lunches + setup.dinners
 }
 
 export const DEFAULT_SETUP: PlanSetup = {
   goals: [],
   diets: [],
   equipment: ['hob', 'microwave', 'kettle', 'freezer'],
-  days: 5,
-  recipeCount: 3,
-  budget: 3000,
+  lunches: 2,
+  dinners: 4,
+  breakfasts: 0,
+  recipeCount: 2,
 }

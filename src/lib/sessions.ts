@@ -1,5 +1,5 @@
-import type { Ingredient, PlanSetup, Recipe } from '../types'
-import { buildBasket, type Basket, type Selection } from './cost'
+import { mainMeals, type Ingredient, type PlanSetup, type Recipe } from '../types'
+import { buildBasket, type Basket, type Pantry, type Selection } from './cost'
 import type { PriceBook } from './prices'
 import type { RecipeBook } from './recipeEdits'
 
@@ -21,13 +21,15 @@ export interface Session {
   createdAt: string
   kind: 'week' | 'single'
   label: string
-  /** Days this was meant to cover. 1 for a single meal. */
-  days: number
+  /** Meals this was meant to cover. 1 for a single meal. */
+  meals: number
   selections: Selection[]
   /** Frozen recipes, keyed by id. */
   recipes: Record<string, Recipe>
   /** Frozen prices for the ingredients used. */
   prices: Record<string, Ingredient>
+  /** What you said you had in the cupboard when you saved it. */
+  pantry: Pantry
   /** What the shop came to when you saved it. */
   buyTotal: number
   eatenTotal: number
@@ -55,6 +57,7 @@ export function createSession(
   selections: Selection[],
   recipeBook: RecipeBook,
   priceBook: PriceBook,
+  pantry: Pantry,
 ): Session {
   const now = new Date()
 
@@ -71,17 +74,19 @@ export function createSession(
     }
   }
 
-  const basket = buildBasket(selections, recipes, prices)
+  const frozenPantry: Pantry = { ...pantry }
+  const basket = buildBasket(selections, recipes, prices, frozenPantry)
 
   return {
     id: makeId(),
     createdAt: now.toISOString(),
     kind,
     label: formatLabel(kind, now, Object.values(recipes)),
-    days: kind === 'single' ? 1 : setup.days,
+    meals: kind === 'single' ? 1 : mainMeals(setup),
     selections,
     recipes,
     prices,
+    pantry: frozenPantry,
     buyTotal: basket.buyTotal,
     eatenTotal: basket.eatenTotal,
     bought: [],
@@ -96,7 +101,7 @@ function structuredCloneSafe<T>(value: T): T {
 
 /** Recompute a session's basket from its own frozen data, never today's. */
 export function sessionBasket(session: Session): Basket {
-  return buildBasket(session.selections, session.recipes, session.prices)
+  return buildBasket(session.selections, session.recipes, session.prices, session.pantry ?? {})
 }
 
 export function sessionPortions(session: Session): number {
@@ -110,7 +115,7 @@ export function sortedSessions(sessions: Session[]): Session[] {
 
 export function shoppingProgress(session: Session): { done: number; total: number } {
   const basket = sessionBasket(session)
-  const lines = basket.lines.filter(l => !l.ingredient.staple)
+  const lines = basket.lines.filter(l => l.inShop)
   return {
     done: lines.filter(l => session.bought.includes(l.ingredient.id)).length,
     total: lines.length,

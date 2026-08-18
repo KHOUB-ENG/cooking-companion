@@ -1,58 +1,62 @@
 import { useMemo, useState } from 'react'
-import type { PlanSetup, Recipe, Unit } from '../types'
 import { PRICES_CHECKED } from '../data/ingredients'
-import type { PriceBook } from '../lib/prices'
 import {
-  buildBasket, groupByAisle, money, portionsForRecipe, scaledQty,
-  sharedIngredients, type Selection,
+  buildBasket, buildSelections, groupByAisle, money, scaledQty,
+  sharedIngredients, type Pantry,
 } from '../lib/cost'
+import type { PriceBook } from '../lib/prices'
+import { mainMeals, type PlanSetup, type Recipe, type Unit } from '../types'
 
 interface Props {
   setup: PlanSetup
   liked: string[]
   recipeById: Record<string, Recipe>
   book: PriceBook
+  pantry: Pantry
   /** How many prices you have shelf-checked, for the honesty note. */
   corrected: number
+  editedRecipes: Set<string>
+  onSetPantry: (id: string, have: boolean | undefined) => void
   onBack: () => void
   onCheckPrices: () => void
   onEditRecipe: (id: string) => void
-  /** Recipe ids you have changed, so the panel can say so. */
-  editedRecipes: Set<string>
 }
 
-export function WeekScreen({
-  setup, liked, recipeById, book, corrected,
-  onBack, onCheckPrices, onEditRecipe, editedRecipes,
-}: Props) {
+export function WeekScreen(props: Props) {
+  const {
+    setup, liked, recipeById, book, pantry, corrected, editedRecipes,
+    onSetPantry, onBack, onCheckPrices, onEditRecipe,
+  } = props
   const [openRecipe, setOpenRecipe] = useState<string | null>(null)
 
-  const chosen = liked.slice(0, setup.recipeCount)
-  const target = setup.days / Math.max(1, chosen.length)
-
-  // Whole batches only - see portionsForRecipe. Each recipe gets its own
-  // number, because a 2-serving stir fry and a 4-serving bake scale differently.
-  const selections: Selection[] = useMemo(
-    () => chosen
-      .map(id => recipeById[id])
-      .filter(Boolean)
-      .map(r => ({ recipeId: r.id, portions: portionsForRecipe(r, target) })),
-    [chosen, target, recipeById],
+  // buildSelections is the single source of truth for how much gets cooked, so
+  // the costs here can't drift from what actually gets saved into the session.
+  const selections = useMemo(
+    () => buildSelections(setup, liked, recipeById),
+    [setup, liked, recipeById],
   )
-
   const portionsOf = (id: string) =>
     selections.find(s => s.recipeId === id)?.portions ?? 0
 
-  const basket = useMemo(() => buildBasket(selections, recipeById, book), [selections, recipeById, book])
+  const basket = useMemo(
+    () => buildBasket(selections, recipeById, book, pantry),
+    [selections, recipeById, book, pantry],
+  )
   const aisles = useMemo(() => groupByAisle(basket), [basket])
   const shared = useMemo(() => sharedIngredients(basket), [basket])
 
-  const totalPortions = selections.reduce((n, sel) => n + sel.portions, 0)
-  const spare = totalPortions - setup.days
-  const over = basket.buyTotal > setup.budget
-  const pct = Math.min(100, (basket.buyTotal / setup.budget) * 100)
+  /** Every cupboard staple this plan needs, and what you've said about it. */
+  const cupboard = useMemo(
+    () => basket.lines.filter(l => l.ingredient.staple),
+    [basket],
+  )
+  const unanswered = cupboard.filter(l => pantry[l.ingredient.id] === undefined)
 
-  if (chosen.length === 0) {
+  const meals = mainMeals(setup)
+  const totalPortions = selections.reduce((n, s) => n + s.portions, 0)
+  const spare = totalPortions - meals - setup.breakfasts
+
+  if (selections.length === 0) {
     return (
       <div className="screen">
         <div className="empty">
@@ -69,8 +73,9 @@ export function WeekScreen({
     <div className="screen">
       <h1>Your week</h1>
       <p className="sub">
-        {chosen.length} {chosen.length === 1 ? 'recipe' : 'recipes'} · {totalPortions} portions ·
-        covers {setup.days} {setup.days === 1 ? 'day' : 'days'}
+        {selections.length} {selections.length === 1 ? 'recipe' : 'recipes'} ·{' '}
+        {totalPortions} portions · covers {meals} {meals === 1 ? 'meal' : 'meals'}
+        {setup.breakfasts > 0 && ` + ${setup.breakfasts} breakfasts`}
         {spare > 0 && ` · ${spare} spare`}
       </p>
 
@@ -80,16 +85,11 @@ export function WeekScreen({
           <span className="k">The shop</span>
           <span className="v">{money(basket.buyTotal)}</span>
         </div>
-        <div className={`bar ${over ? 'over' : ''}`}><i style={{ width: `${pct}%` }} /></div>
-        <div className="money-row">
-          <span className="k">
-            {over
-              ? `${money(basket.buyTotal - setup.budget)} over your ${money(setup.budget)} budget`
-              : `${money(setup.budget - basket.buyTotal)} under budget`}
-          </span>
-        </div>
+        <p className="tiny" style={{ textAlign: 'left', margin: '2px 0 12px' }}>
+          What you hand over at the till — whole packs, not portions.
+        </p>
 
-        <div style={{ height: 1, background: 'var(--line)', margin: '12px 0' }} />
+        <div style={{ height: 1, background: 'var(--line)', margin: '4px 0 8px' }} />
 
         <div className="money-row">
           <span className="k">Food you'll actually eat</span>
@@ -104,9 +104,8 @@ export function WeekScreen({
           <span className="v">{money(Math.round(basket.eatenTotal / totalPortions))}</span>
         </div>
         {/*
-          Thresholds are calibrated, not guessed. Pack sizes alone put a normal
-          one-week shop around 50%, so red has to mean "the plan shape is wrong"
-          (the 3-recipes-over-5-days case lands at 29%), not "shops sell bags".
+          Calibrated, not guessed: pack sizes alone put a normal one-week shop
+          near 50%, so red means the plan shape is wrong, not "shops sell bags".
         */}
         <div className="money-row">
           <span className="k">You'll use</span>
@@ -121,12 +120,49 @@ export function WeekScreen({
             {Math.round(basket.efficiency * 100)}% of it
           </span>
         </div>
-        <p className="tiny" style={{ textAlign: 'left', marginTop: 10 }}>
-          You buy whole packs, but you don't eat whole packs. The{' '}
-          {money(basket.leftoverValue)} difference isn't wasted — it's next week's
-          food, as long as you use it.
-        </p>
       </div>
+
+      {/* --- cupboard check ------------------------------------------------ */}
+      {cupboard.length > 0 && (
+        <div className="panel">
+          <h2>Check your cupboard</h2>
+          <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 14 }}>
+            {unanswered.length > 0
+              ? `${unanswered.length} still to check. Oil, spices and the like last a term, so they only go on the list if you say you need them.`
+              : 'All answered. Anything you said you need is on the shopping list below.'}
+          </p>
+
+          {cupboard.map(l => {
+            const state = pantry[l.ingredient.id]
+            return (
+              <div className={`cupboard-row ${state === undefined ? 'ask' : ''}`} key={l.ingredient.id}>
+                <span className="text">
+                  <span className="n">{l.ingredient.name}</span>
+                  <span className="d">{l.ingredient.packLabel} · {money(l.ingredient.pack.price)}</span>
+                </span>
+                <span className="choice">
+                  <button
+                    className={state === true ? 'on' : ''}
+                    onClick={() => onSetPantry(l.ingredient.id, state === true ? undefined : true)}
+                  >
+                    Got it
+                  </button>
+                  <button
+                    className={state === false ? 'on need' : ''}
+                    onClick={() => onSetPantry(l.ingredient.id, state === false ? undefined : false)}
+                  >
+                    Need it
+                  </button>
+                </span>
+              </div>
+            )
+          })}
+          <p className="tiny" style={{ textAlign: 'left', marginTop: 10 }}>
+            Answers are remembered, so you won't be asked about the same olive
+            oil every week.
+          </p>
+        </div>
+      )}
 
       {/* --- leftover chaining -------------------------------------------- */}
       {shared.length > 0 && (
@@ -177,17 +213,14 @@ export function WeekScreen({
           <span className="k">Total</span>
           <span className="v">{money(basket.buyTotal)}</span>
         </div>
-        <p className="tiny" style={{ textAlign: 'left' }}>
-          Salt, oil, spices and stock cubes are assumed to be in your cupboard.
-          Buying them all from scratch would add about {money(basket.stapleTotal)} once.
-        </p>
       </div>
 
       {/* --- the recipes ---------------------------------------------------- */}
       <h2 style={{ marginTop: 24 }}>How to cook it</h2>
-      {chosen.map(id => {
-        const recipe = recipeById[id]
+      {selections.map(sel => {
+        const recipe = recipeById[sel.recipeId]
         if (!recipe) return null
+        const id = recipe.id
         const open = openRecipe === id
         return (
           <div className="panel" key={id}>
@@ -199,8 +232,11 @@ export function WeekScreen({
                 <span style={{ fontSize: 26, marginRight: 10 }}>{recipe.emoji}</span>
                 <span style={{ fontWeight: 650 }}>{recipe.name}</span>
                 {editedRecipes.has(id) && <span className="badge" style={{ marginLeft: 8 }}>yours</span>}
+                {recipe.tags.includes('breakfast') && (
+                  <span className="badge quiet" style={{ marginLeft: 8 }}>breakfast</span>
+                )}
                 <br />
-                <span className="d" style={{ color: 'var(--muted)', fontSize: 14 }}>
+                <span style={{ color: 'var(--muted)', fontSize: 14 }}>
                   {portionsOf(id)} portions · {recipe.minutes} min
                 </span>
               </span>
@@ -209,21 +245,20 @@ export function WeekScreen({
 
             {open && (
               <div style={{ marginTop: 16 }}>
-                <h4 style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--muted)', marginBottom: 8 }}>
-                  You need
-                </h4>
+                <h4 className="mini-head">You need</h4>
                 {recipe.ingredients.map(ri => (
                   <div className="item" key={ri.ingredientId}>
-                    <span className="n">{nameOf(book, ri.ingredientId)}</span>
+                    <span className="n">{book[ri.ingredientId]?.name ?? ri.ingredientId}</span>
                     <span className="d">
-                      {formatQty(scaledQty(recipe, ri.qty, portionsOf(id)), unitOf(book, ri.ingredientId))}
+                      {formatQty(
+                        scaledQty(recipe, ri.qty, portionsOf(id)),
+                        book[ri.ingredientId]?.unit ?? 'g',
+                      )}
                     </span>
                   </div>
                 ))}
 
-                <h4 style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.09em', color: 'var(--muted)', margin: '20px 0 12px' }}>
-                  Steps
-                </h4>
+                <h4 className="mini-head" style={{ marginTop: 20 }}>Steps</h4>
                 <ol className="steps">
                   {recipe.steps.map((s, i) => <li key={i}>{s}</li>)}
                 </ol>
@@ -254,22 +289,11 @@ export function WeekScreen({
   )
 }
 
-// --- small helpers ----------------------------------------------------------
-
-
-function nameOf(book: PriceBook, id: string): string {
-  return book[id]?.name ?? id
-}
-
-function unitOf(book: PriceBook, id: string): Unit {
-  return book[id]?.unit ?? 'g'
-}
-
 /** Round to something a human would actually measure. */
 function formatQty(qty: number, unit: Unit): string {
   if (unit === 'each') {
     const n = Math.round(qty * 2) / 2
-    return n === 1 ? '1' : `${n}`
+    return `${n}`
   }
   if (qty >= 1000) return `${(qty / 1000).toFixed(qty % 1000 === 0 ? 0 : 1)}${unit === 'ml' ? 'l' : 'kg'}`
   return `${Math.round(qty)}${unit}`
