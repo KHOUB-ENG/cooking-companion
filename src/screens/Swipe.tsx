@@ -266,9 +266,22 @@ function SlotList({ slots, recipeById, book, onRemove }: {
 }
 
 function Art({ recipe }: { recipe: Recipe }) {
+  // Every recipe names an image, but the files arrive in batches - so a missing
+  // one has to land on the emoji card rather than a broken-image icon.
+  const [failed, setFailed] = useState(false)
+  const showImage = !!recipe.image && !failed
   return (
     <div className="art" style={{ '--hue': hueFor(recipe.id) } as React.CSSProperties}>
-      {recipe.image ? <img src={`/recipes/${recipe.image}`} alt="" draggable={false} /> : recipe.emoji}
+      {showImage ? (
+        <img
+          src={`/recipes/${recipe.image}`}
+          alt=""
+          draggable={false}
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        recipe.emoji
+      )}
     </div>
   )
 }

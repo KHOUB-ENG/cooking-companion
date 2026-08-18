@@ -12,6 +12,7 @@ import type { Recipe } from '../types'
 export const RECIPES: Recipe[] = [
   {
     id: 'chilli',
+    image: 'chilli.jpg',
     name: 'Chilli Con Carne',
     blurb: 'The batch-cook king. Makes a mountain, freezes perfectly, tastes better on day two.',
     emoji: '🌶️',
@@ -54,6 +55,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'traybake',
+    image: 'traybake.jpg',
     name: 'Chicken & Potato Traybake',
     blurb: 'Everything on one tray. Five minutes of work, then the oven does the rest.',
     emoji: '🍗',
@@ -87,6 +89,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'tomatopasta',
+    image: 'tomatopasta.jpg',
     name: 'Creamy Tomato Pasta',
     blurb: 'Ten minutes, one pan, about 60p a bowl. The thing you make when you cannot be bothered.',
     emoji: '🍝',
@@ -122,6 +125,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'airfryerchicken',
+    image: 'airfryerchicken.jpg',
     name: 'Air Fryer Chicken & Wedges',
     blurb: 'Crispy outside, no oven, barely any washing up.',
     emoji: '🌀',
@@ -152,6 +156,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'dahl',
+    image: 'dahl.jpg',
     name: 'Red Lentil Dahl',
     blurb: 'About 40p a portion and genuinely filling. The cheapest good thing you can cook.',
     emoji: '🍲',
@@ -191,6 +196,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'tunapastabake',
+    image: 'tunapastabake.jpg',
     name: 'Tuna Pasta Bake',
     blurb: 'Cheap protein, makes four portions, reheats fine all week.',
     emoji: '🐟',
@@ -227,6 +233,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'chickpeacurry',
+    image: 'chickpeacurry.jpg',
     name: 'Chickpea & Sweet Potato Curry',
     blurb: 'Vegetarian, filling, and the leftovers are better than the first night.',
     emoji: '🍛',
@@ -265,6 +272,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'eggfriedrice',
+    image: 'eggfriedrice.jpg',
     name: 'Microwave Egg Fried Rice',
     blurb: 'For when you have no hob, no energy, and it is 11pm.',
     emoji: '🍚',
@@ -297,6 +305,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'sausagecasserole',
+    image: 'sausagecasserole.jpg',
     name: 'Sausage & Bean Casserole',
     blurb: 'Comfort food for about 90p a portion. One pan, no skill required.',
     emoji: '🌭',
@@ -331,6 +340,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'peanutnoodles',
+    image: 'peanutnoodles.jpg',
     name: 'Peanut Butter Noodles',
     blurb: 'Fifteen minutes, tastes like a takeaway, costs about 80p.',
     emoji: '🥜',
@@ -363,6 +373,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'baconpasta',
+    image: 'baconpasta.jpg',
     name: 'Creamy Bacon & Pea Pasta',
     blurb: 'Carbonara without the fear. No cream — the sauce is just egg and cheese.',
     emoji: '🥓',
@@ -397,6 +408,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'chickenfajita',
+    image: 'chickenfajita.jpg',
     name: 'Chicken Fajita Wraps',
     blurb: 'One pan, loads of flavour, and everyone can build their own.',
     emoji: '🌯',
@@ -432,6 +444,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'burritos',
+    image: 'burritos.jpg',
     name: 'Beef & Bean Burritos',
     blurb: 'Big, filling, and the mix freezes brilliantly for future you.',
     emoji: '🌮',
@@ -470,6 +483,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'sausagepasta',
+    image: 'sausagepasta.jpg',
     name: 'Sausage & Tomato Pasta',
     blurb: 'Sausages out of their skins become instant meatballs. About 80p a portion.',
     emoji: '🍝',
@@ -505,6 +519,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'lentilbol',
+    image: 'lentilbol.jpg',
     name: 'Lentil Bolognese',
     blurb: 'Costs about 45p a portion and honestly holds its own against the meat version.',
     emoji: '🍅',
@@ -541,6 +556,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'stroganoff',
+    image: 'stroganoff.jpg',
     name: 'Mushroom Stroganoff',
     blurb: 'Creamy, savoury, and on the table in 25 minutes.',
     emoji: '🍄',
@@ -576,6 +592,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'thaicurry',
+    image: 'thaicurry.jpg',
     name: 'Thai Green Chicken Curry',
     blurb: 'Tastes like a takeaway, takes half an hour, costs a fraction.',
     emoji: '🍜',
@@ -611,6 +628,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'katsu',
+    image: 'katsu.jpg',
     name: 'Katsu-style Chicken Curry',
     blurb: 'Crispy breaded chicken in a sweet curry sauce. Looks impressive, isn\'t hard.',
     emoji: '🍛',
@@ -651,6 +669,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'tunasweetcorn',
+    image: 'tunasweetcorn.jpg',
     name: 'Tuna & Sweetcorn Pasta',
     blurb: 'Fifteen minutes, mostly from tins, and genuinely high protein.',
     emoji: '🌽',
@@ -681,6 +700,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'chorizostew',
+    image: 'chorizostew.jpg',
     name: 'Chorizo & Chickpea Stew',
     blurb: 'A little chorizo flavours the whole pot. Smoky, filling, freezes well.',
     emoji: '🥘',
@@ -715,6 +735,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'bakedfeta',
+    image: 'bakedfeta.jpg',
     name: 'Baked Feta Pasta',
     blurb: 'Everything goes in one dish, the oven does the work, the sauce makes itself.',
     emoji: '🧀',
@@ -749,6 +770,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'sausagetraybake',
+    image: 'sausagetraybake.jpg',
     name: 'Sausage & Root Veg Traybake',
     blurb: 'Chop, tip, roast. Five minutes of actual work for four dinners.',
     emoji: '🥔',
@@ -781,6 +803,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'jacketbeans',
+    image: 'jacketbeans.jpg',
     name: 'Jacket Potato, Beans & Cheese',
     blurb: 'The cheapest hot meal there is. Put it in and forget about it.',
     emoji: '🥔',
@@ -811,6 +834,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'salmontraybake',
+    image: 'salmontraybake.jpg',
     name: 'Salmon & Potato Traybake',
     blurb: 'Feels like a proper dinner. Frozen salmon makes it affordable.',
     emoji: '🐠',
@@ -843,6 +867,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'chickenpastabake',
+    image: 'chickenpastabake.jpg',
     name: 'Cheesy Chicken Pasta Bake',
     blurb: 'Makes a huge dish. Reheats all week without getting worse.',
     emoji: '🧆',
@@ -878,6 +903,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'halloumiwrap',
+    image: 'halloumiwrap.jpg',
     name: 'Air Fryer Halloumi Wraps',
     blurb: 'Salty, squeaky halloumi and charred peppers in twenty minutes.',
     emoji: '🫓',
@@ -911,6 +937,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'katsustrips',
+    image: 'katsustrips.jpg',
     name: 'Air Fryer Chicken Strips & Chips',
     blurb: 'Beats anything from a freezer box, and it is 42g of protein.',
     emoji: '🍗',
@@ -945,6 +972,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'airsalmon',
+    image: 'airsalmon.jpg',
     name: 'Air Fryer Salmon & Veg',
     blurb: 'Twenty minutes, one basket, and it tastes like you can cook.',
     emoji: '🐟',
@@ -975,6 +1003,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'microjacket',
+    image: 'microjacket.jpg',
     name: 'Microwave Jacket, Tuna & Sweetcorn',
     blurb: 'A hot proper meal in twelve minutes with nothing but a microwave.',
     emoji: '🥔',
@@ -1004,6 +1033,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'overnightoats',
+    image: 'overnightoats.jpg',
     name: 'Overnight Oats',
     blurb: 'Made in ninety seconds the night before. No cooking, no equipment, no excuse.',
     emoji: '🥣',
@@ -1035,6 +1065,7 @@ export const RECIPES: Recipe[] = [
   // until it is one paste. Her rule for the ratio is in the Kebab Tabai tip.
   {
     id: 'kebabtabai',
+    image: 'kebabtabai.jpg',
     name: 'Kebab Tabai',
     blurb: "Mumani's pan kebab in tomato sauce, with rice. Proper food for about £1.60 a plate.",
     emoji: '🍖',
@@ -1070,6 +1101,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'meatballs',
+    image: 'meatballs.jpg',
     name: 'Tomato Meatballs',
     blurb: 'Meatballs in a thick tomato sauce, all in one pan. Reheats better than it started.',
     emoji: '🍅',
@@ -1102,6 +1134,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'bolognese',
+    image: 'bolognese.jpg',
     name: 'Mumani Bolognese',
     blurb: 'Big pot of proper mince sauce. Costs about the same for four portions as for one.',
     emoji: '🍝',
@@ -1138,6 +1171,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'smashburger',
+    image: 'smashburger.jpg',
     name: 'Smash Burger',
     blurb: 'Thin, fast and better than the takeaway. Fifteen minutes start to finish.',
     emoji: '🍔',
@@ -1172,6 +1206,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'koobideh',
+    image: 'koobideh.jpg',
     name: 'Koobideh',
     blurb: 'The same mix as the smash burger, shaped long and eaten in a wrap. Twenty minutes.',
     emoji: '🥘',
@@ -1203,6 +1238,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'porridge',
+    image: 'porridge.jpg',
     name: 'Peanut Butter Porridge',
     blurb: 'Four minutes, about 30p, and it actually keeps you full until lunch.',
     emoji: '🥣',
@@ -1230,6 +1266,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'scrambledeggs',
+    image: 'scrambledeggs.jpg',
     name: 'Scrambled Eggs on Toast',
     blurb: 'The one breakfast worth learning properly. Five minutes, 26g of protein.',
     emoji: '🍳',
@@ -1260,6 +1297,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: 'breakfastwrap',
+    image: 'breakfastwrap.jpg',
     name: 'Breakfast Egg Wrap',
     blurb: "Eat it walking to a nine o'clock lecture. Proper food, no plate needed.",
     emoji: '🌯',
