@@ -263,8 +263,65 @@ export function filterRecipes(
   })
 }
 
+// --- overlap ---------------------------------------------------------------
+//
+// The student waste problem isn't "I bought food I didn't like", it's "I bought
+// a 1kg bag of potatoes for one recipe and the rest went soft in the cupboard".
+//
+// The fix is to stop treating a recipe's cost as a fixed number. What a recipe
+// actually costs depends on what you've ALREADY picked: if the potatoes are in
+// the trolley anyway, a second recipe using them is close to free. That number
+// is the marginal cost, and it's what the deck should sort on.
+
+export interface Marginal {
+  /** Pence this recipe would add to your shop, given what you've picked. */
+  addedCost: number
+  /** What it costs on its own, ignoring everything else. */
+  standaloneCost: number
+  /** Names of ingredients it shares with your existing picks. */
+  reuses: string[]
+}
+
+export function marginalCost(
+  already: Selection[],
+  candidate: Selection,
+  recipeById: Record<string, Recipe>,
+  book: PriceBook,
+): Marginal {
+  const before = buildBasket(already, recipeById, book)
+  const after = buildBasket([...already, candidate], recipeById, book)
+  const alone = buildBasket([candidate], recipeById, book)
+
+  const owned = new Set(
+    before.lines.filter(l => !l.ingredient.staple).map(l => l.ingredient.id),
+  )
+  const recipe = recipeById[candidate.recipeId]
+  const reuses = recipe
+    ? recipe.ingredients
+        .filter(ri => owned.has(ri.ingredientId))
+        .map(ri => book[ri.ingredientId]?.name)
+        .filter((n): n is string => !!n)
+    : []
+
+  return {
+    addedCost: Math.max(0, after.buyTotal - before.buyTotal),
+    standaloneCost: alone.buyTotal,
+    reuses,
+  }
+}
+
 /** Goal-aware ordering, so the deck opens with cards you are likely to want. */
-export function rankRecipes(recipes: Recipe[], setup: PlanSetup, book: PriceBook): Recipe[] {
+export function rankRecipes(
+  recipes: Recipe[],
+  setup: PlanSetup,
+  book: PriceBook,
+  /** What you've already picked. Pass it and the deck becomes overlap-aware. */
+  already: Selection[] = [],
+  recipeById: Record<string, Recipe> = {},
+): Recipe[] {
+  const overlapAware = already.length > 0
+  const target = setup.days / Math.max(1, setup.recipeCount)
+
   const scored = recipes.map(recipe => {
     let score = 0
     for (const goal of setup.goals) {
@@ -273,8 +330,23 @@ export function rankRecipes(recipes: Recipe[], setup: PlanSetup, book: PriceBook
     if (setup.goals.includes('high_protein')) score += recipe.proteinPerServing / 5
     if (setup.goals.includes('cheapest')) score -= costPerPortion(recipe, book) / 20
     if (setup.goals.includes('quick')) score -= recipe.minutes / 10
+
+    // Once something is in the trolley, what matters is what each new recipe
+    // ADDS, not what it costs alone. Weighted to outrank a single goal match,
+    // because saving £3 of waste beats a nominally better-matching dish.
+    if (overlapAware) {
+      const m = marginalCost(
+        already,
+        { recipeId: recipe.id, portions: portionsForRecipe(recipe, target) },
+        { ...recipeById, [recipe.id]: recipe },
+        book,
+      )
+      score -= m.addedCost / 25
+    }
+
     return { recipe, score }
   })
+
   scored.sort((a, b) => b.score - a.score)
   return scored.map(s => s.recipe)
 }

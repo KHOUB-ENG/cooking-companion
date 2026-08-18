@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PlanSetup, Recipe } from '../types'
 import { EQUIPMENT_ICON } from '../types'
-import { costPerPortion, filterRecipes, money, rankRecipes } from '../lib/cost'
+import {
+  costPerPortion, filterRecipes, marginalCost, money, portionsForRecipe,
+  rankRecipes, type Marginal, type Selection,
+} from '../lib/cost'
 import type { PriceBook } from '../lib/prices'
 
 interface Props {
@@ -24,11 +27,39 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
   const [exiting, setExiting] = useState<{ id: string; dir: 1 | -1 } | null>(null)
   const dragStart = useRef<number | null>(null)
 
+  const recipeById = useMemo(
+    () => Object.fromEntries(recipes.map(r => [r.id, r])),
+    [recipes],
+  )
+
+  /** What's already in the trolley, so new cards can be priced against it. */
+  const already: Selection[] = useMemo(() => {
+    const target = setup.days / Math.max(1, setup.recipeCount)
+    return liked
+      .slice(0, setup.recipeCount)
+      .map(id => recipeById[id])
+      .filter(Boolean)
+      .map(r => ({ recipeId: r.id, portions: portionsForRecipe(r, target) }))
+  }, [liked, setup.days, setup.recipeCount, recipeById])
+
   const queue = useMemo(() => {
     const eligible = filterRecipes(recipes, setup, search)
-    const ranked = rankRecipes(eligible, setup, book)
+    const ranked = rankRecipes(eligible, setup, book, already, recipeById)
     return ranked.filter(r => !liked.includes(r.id) && !passed.includes(r.id))
-  }, [recipes, setup, book, search, liked, passed])
+  }, [recipes, setup, book, search, liked, passed, already, recipeById])
+
+  /** How much the card on top would actually add to the shop. */
+  const topMarginal: Marginal | null = useMemo(() => {
+    const top = queue[0]
+    if (!top || already.length === 0) return null
+    const target = setup.days / Math.max(1, setup.recipeCount)
+    return marginalCost(
+      already,
+      { recipeId: top.id, portions: portionsForRecipe(top, target) },
+      recipeById,
+      book,
+    )
+  }, [queue, already, setup.days, setup.recipeCount, recipeById, book])
 
   const enough = liked.length >= setup.recipeCount
   const top = queue[0]
@@ -121,7 +152,7 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
         {next && (
           <div className="card" style={{ transform: 'scale(0.96) translateY(10px)', opacity: 0.6 }}>
             <Art recipe={next} />
-            <Body recipe={next} book={book} />
+            <Body recipe={next} book={book} marginal={null} />
           </div>
         )}
 
@@ -136,7 +167,7 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
           <span className="stamp yes" style={{ opacity: Math.max(0, offset / THRESHOLD) }}>YES</span>
           <span className="stamp no" style={{ opacity: Math.max(0, -offset / THRESHOLD) }}>NOPE</span>
           <Art recipe={top} />
-          <Body recipe={top} book={book} />
+          <Body recipe={top} book={book} marginal={topMarginal} />
         </div>
       </div>
 
@@ -161,7 +192,11 @@ function Art({ recipe }: { recipe: Recipe }) {
   )
 }
 
-function Body({ recipe, book }: { recipe: Recipe; book: PriceBook }) {
+function Body({ recipe, book, marginal }: {
+  recipe: Recipe
+  book: PriceBook
+  marginal: Marginal | null
+}) {
   return (
     <div className="body">
       <h3>{recipe.name}</h3>
@@ -172,6 +207,32 @@ function Body({ recipe, book }: { recipe: Recipe; book: PriceBook }) {
         <span><b>{recipe.minutes}</b> min</span>
         <span>{recipe.equipment.map(e => EQUIPMENT_ICON[e]).join(' ')}</span>
       </div>
+
+      {marginal && (
+        <div className={`adds ${marginal.reuses.length > 0 ? 'shares' : ''}`}>
+          <span className="amount">
+            {marginal.addedCost === 0
+              ? 'Adds nothing to your shop'
+              : `+${money(marginal.addedCost)} to your shop`}
+          </span>
+          {marginal.reuses.length > 0 && (
+            <span className="reuse">
+              Uses your {listOf(marginal.reuses)}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
+}
+
+/** "onions, rice and cheddar" - reads like a person wrote it. */
+function listOf(names: string[]): string {
+  const shown = names.slice(0, 3).map(n => n.toLowerCase())
+  const extra = names.length - shown.length
+  let text = shown.length > 1
+    ? `${shown.slice(0, -1).join(', ')} and ${shown[shown.length - 1]}`
+    : shown[0]
+  if (extra > 0) text += ` +${extra} more`
+  return text
 }

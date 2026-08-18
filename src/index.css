@@ -327,3 +327,22 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
   border: 1.5px solid var(--line); border-radius: 10px; resize: vertical;
 }
 .edit-step textarea:focus { outline: none; border-color: var(--accent); }
+
+/* --- overlap / marginal cost on a swipe card ---------------------------- */
+
+.adds {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.adds .amount { font-weight: 700; font-size: 15px; }
+.adds .reuse { color: var(--muted); font-size: 13px; }
+
+/* Sharing ingredients with your existing picks is the good case, so it is the
+   one that gets the colour. */
+.adds.shares { background: var(--accent-soft); }
+.adds.shares .amount { color: var(--accent); }
