@@ -1,4 +1,4 @@
-import { INGREDIENT_BY_ID } from '../data/ingredients'
+import type { PriceBook } from './prices'
 import type { Ingredient, PlanSetup, Recipe } from '../types'
 import { AISLE_ORDER, AISLE_LABEL, type Aisle } from '../types'
 
@@ -59,6 +59,7 @@ export function scaledQty(recipe: Recipe, qty: number, portions: number): number
 export function buildBasket(
   selections: Selection[],
   recipeById: Record<string, Recipe>,
+  book: PriceBook,
 ): Basket {
   const needed = new Map<string, { qty: number; usedBy: string[] }>()
 
@@ -81,7 +82,7 @@ export function buildBasket(
   let leftoverValue = 0
 
   for (const [id, entry] of needed) {
-    const ingredient = INGREDIENT_BY_ID[id]
+    const ingredient = book[id]
     if (!ingredient) continue
 
     const packs = Math.ceil(entry.qty / ingredient.pack.size)
@@ -210,10 +211,11 @@ export function sharedIngredients(basket: Basket): BasketLine[] {
 }
 
 /** Cost per portion, using the honest "what you ate" number. */
-export function costPerPortion(recipe: Recipe): number {
+export function costPerPortion(recipe: Recipe, book: PriceBook): number {
   const basket = buildBasket(
     [{ recipeId: recipe.id, portions: recipe.baseServings }],
     { [recipe.id]: recipe },
+    book,
   )
   return Math.round(basket.eatenTotal / recipe.baseServings)
 }
@@ -262,14 +264,14 @@ export function filterRecipes(
 }
 
 /** Goal-aware ordering, so the deck opens with cards you are likely to want. */
-export function rankRecipes(recipes: Recipe[], setup: PlanSetup): Recipe[] {
+export function rankRecipes(recipes: Recipe[], setup: PlanSetup, book: PriceBook): Recipe[] {
   const scored = recipes.map(recipe => {
     let score = 0
     for (const goal of setup.goals) {
       if (recipe.tags.includes(goal)) score += 10
     }
     if (setup.goals.includes('high_protein')) score += recipe.proteinPerServing / 5
-    if (setup.goals.includes('cheapest')) score -= costPerPortion(recipe) / 20
+    if (setup.goals.includes('cheapest')) score -= costPerPortion(recipe, book) / 20
     if (setup.goals.includes('quick')) score -= recipe.minutes / 10
     return { recipe, score }
   })

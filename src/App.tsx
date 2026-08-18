@@ -1,15 +1,26 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { RECIPES, RECIPE_BY_ID } from './data/recipes'
+import { buildPriceBook, editedCount } from './lib/prices'
 import { exportData, useAppState, type Step } from './lib/store'
 import { EquipmentScreen, GoalsScreen, PlanScreen, StoreScreen } from './screens/Setup'
+import { PricesScreen } from './screens/Prices'
 import { SwipeScreen } from './screens/Swipe'
 import { WeekScreen } from './screens/Week'
 
+/** The linear flow. 'prices' sits outside it - you dip into it and come back. */
 const STEPS: Step[] = ['store', 'goals', 'equipment', 'plan', 'swipe', 'week']
 
 export default function App() {
-  const { state, patchSetup, like, pass, resetSwipes } = useAppState()
+  const {
+    state, patchSetup, like, pass, resetSwipes, setPrice, resetPrices,
+  } = useAppState()
   const [step, setStep] = useState<Step>('store')
+  const [returnTo, setReturnTo] = useState<Step>('store')
+
+  // Your shelf-checked prices layered over the shipped estimates. Everything
+  // that costs anything reads from this, never from the raw table.
+  const book = useMemo(() => buildPriceBook(state.prices), [state.prices])
+  const corrected = editedCount(state.prices)
 
   const index = STEPS.indexOf(step)
   const go = (delta: number) => {
@@ -17,11 +28,29 @@ export default function App() {
     if (next) setStep(next)
   }
 
-  // The one rule that stops you reaching a dead end: you need some kit.
+  const openPrices = () => {
+    setReturnTo(step)
+    setStep('prices')
+  }
+
   const canAdvance =
     step === 'equipment' ? state.setup.equipment.length > 0
     : step === 'swipe' ? state.liked.length > 0
     : true
+
+  if (step === 'prices') {
+    return (
+      <div className="app">
+        <PricesScreen
+          overrides={state.prices}
+          book={book}
+          onSet={setPrice}
+          onResetAll={resetPrices}
+          onDone={() => setStep(returnTo)}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="app">
@@ -29,7 +58,9 @@ export default function App() {
         {STEPS.map((s, i) => <span key={s} className={i <= index ? 'on' : ''} />)}
       </div>
 
-      {step === 'store' && <StoreScreen setup={state.setup} patch={patchSetup} />}
+      {step === 'store' && (
+        <StoreScreen setup={state.setup} patch={patchSetup} onCheckPrices={openPrices} corrected={corrected} />
+      )}
       {step === 'goals' && <GoalsScreen setup={state.setup} patch={patchSetup} />}
       {step === 'equipment' && <EquipmentScreen setup={state.setup} patch={patchSetup} />}
       {step === 'plan' && <PlanScreen setup={state.setup} patch={patchSetup} recipes={RECIPES} />}
@@ -38,6 +69,7 @@ export default function App() {
         <SwipeScreen
           setup={state.setup}
           recipes={RECIPES}
+          book={book}
           liked={state.liked}
           passed={state.passed}
           onLike={like}
@@ -51,14 +83,15 @@ export default function App() {
           setup={state.setup}
           liked={state.liked}
           recipeById={RECIPE_BY_ID}
+          book={book}
+          corrected={corrected}
           onBack={() => setStep('swipe')}
+          onCheckPrices={openPrices}
         />
       )}
 
       <div className="footer">
-        {index > 0 && (
-          <button className="btn ghost" onClick={() => go(-1)}>Back</button>
-        )}
+        {index > 0 && <button className="btn ghost" onClick={() => go(-1)}>Back</button>}
 
         {step === 'week' ? (
           <button className="btn ghost" style={{ flex: 1 }} onClick={() => exportData(state)}>

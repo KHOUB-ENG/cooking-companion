@@ -230,3 +230,53 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
 
 .link { color: var(--accent); font-weight: 600; font-size: 15px; }
 .tiny { color: var(--muted); font-size: 12px; text-align: center; margin-top: 16px; }
+
+/* --- shelf check -------------------------------------------------------- */
+
+.price-row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.price-row:last-child { border-bottom: none; }
+
+.price-name { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.price-name .n { font-weight: 600; }
+.price-name .d { flex-basis: 100%; color: var(--muted); font-size: 13px; }
+.price-name .d s { color: var(--faint, var(--muted)); opacity: 0.7; }
+
+.badge {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.badge.quiet { background: var(--surface-2); color: var(--muted); }
+
+.price-fields { display: flex; align-items: flex-end; gap: 10px; }
+.price-fields label { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.price-fields label span {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.price-fields input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+}
+.price-fields input::placeholder { color: var(--muted); opacity: 0.6; }
+.price-fields input:focus { outline: none; border-color: var(--accent); }
+.price-fields .link { padding-bottom: 10px; white-space: nowrap; }

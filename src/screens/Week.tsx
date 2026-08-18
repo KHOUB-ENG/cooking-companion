@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { PlanSetup, Recipe, Unit } from '../types'
-import { INGREDIENT_BY_ID, PRICES_CHECKED } from '../data/ingredients'
+import { PRICES_CHECKED } from '../data/ingredients'
+import type { PriceBook } from '../lib/prices'
 import {
   buildBasket, groupByAisle, money, portionsForRecipe, scaledQty,
   sharedIngredients, type Selection,
@@ -10,10 +11,14 @@ interface Props {
   setup: PlanSetup
   liked: string[]
   recipeById: Record<string, Recipe>
+  book: PriceBook
+  /** How many prices you have shelf-checked, for the honesty note. */
+  corrected: number
   onBack: () => void
+  onCheckPrices: () => void
 }
 
-export function WeekScreen({ setup, liked, recipeById, onBack }: Props) {
+export function WeekScreen({ setup, liked, recipeById, book, corrected, onBack, onCheckPrices }: Props) {
   const [openRecipe, setOpenRecipe] = useState<string | null>(null)
 
   const chosen = liked.slice(0, setup.recipeCount)
@@ -32,7 +37,7 @@ export function WeekScreen({ setup, liked, recipeById, onBack }: Props) {
   const portionsOf = (id: string) =>
     selections.find(s => s.recipeId === id)?.portions ?? 0
 
-  const basket = useMemo(() => buildBasket(selections, recipeById), [selections, recipeById])
+  const basket = useMemo(() => buildBasket(selections, recipeById, book), [selections, recipeById, book])
   const aisles = useMemo(() => groupByAisle(basket), [basket])
   const shared = useMemo(() => sharedIngredients(basket), [basket])
 
@@ -202,9 +207,9 @@ export function WeekScreen({ setup, liked, recipeById, onBack }: Props) {
                 </h4>
                 {recipe.ingredients.map(ri => (
                   <div className="item" key={ri.ingredientId}>
-                    <span className="n">{recipeIngredientName(ri.ingredientId)}</span>
+                    <span className="n">{nameOf(book, ri.ingredientId)}</span>
                     <span className="d">
-                      {formatQty(scaledQty(recipe, ri.qty, portionsOf(id)), unitOf(ri.ingredientId))}
+                      {formatQty(scaledQty(recipe, ri.qty, portionsOf(id)), unitOf(book, ri.ingredientId))}
                     </span>
                   </div>
                 ))}
@@ -223,7 +228,13 @@ export function WeekScreen({ setup, liked, recipeById, onBack }: Props) {
         )
       })}
 
-      <p className="tiny">Prices are Aldi estimates from {PRICES_CHECKED}.</p>
+      <p className="tiny">
+        {corrected > 0
+          ? `${corrected} of these prices you checked yourself. The rest are estimates from ${PRICES_CHECKED}.`
+          : `Every price here is an estimate from ${PRICES_CHECKED}, not real data.`}
+        {' '}
+        <button className="link" onClick={onCheckPrices}>Check prices</button>
+      </p>
     </div>
   )
 }
@@ -231,12 +242,12 @@ export function WeekScreen({ setup, liked, recipeById, onBack }: Props) {
 // --- small helpers ----------------------------------------------------------
 
 
-function recipeIngredientName(id: string): string {
-  return INGREDIENT_BY_ID[id]?.name ?? id
+function nameOf(book: PriceBook, id: string): string {
+  return book[id]?.name ?? id
 }
 
-function unitOf(id: string): Unit {
-  return INGREDIENT_BY_ID[id]?.unit ?? 'g'
+function unitOf(book: PriceBook, id: string): Unit {
+  return book[id]?.unit ?? 'g'
 }
 
 /** Round to something a human would actually measure. */

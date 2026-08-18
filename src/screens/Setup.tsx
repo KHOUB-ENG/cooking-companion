@@ -23,7 +23,12 @@ const STORES = [
   { id: 'sainsburys', name: "Sainsbury's", note: 'Coming soon', emoji: '🛒', ready: false },
 ]
 
-export function StoreScreen({ setup }: Props) {
+interface StoreProps extends Props {
+  onCheckPrices: () => void
+  corrected: number
+}
+
+export function StoreScreen({ setup, onCheckPrices, corrected }: StoreProps) {
   return (
     <div className="screen">
       <h1>Where are you shopping?</h1>
@@ -42,7 +47,20 @@ export function StoreScreen({ setup }: Props) {
           </button>
         ))}
       </div>
-      <p className="tiny">Prices last checked {PRICES_CHECKED}. They drift — treat totals as close, not exact.</p>
+      <div className="panel" style={{ marginTop: 20 }}>
+        <div className="money-row">
+          <span className="k">Price accuracy</span>
+          <span className="v">{corrected} / 50 checked</span>
+        </div>
+        <p style={{ color: 'var(--muted)', fontSize: 14, margin: '4px 0 12px' }}>
+          {corrected > 0
+            ? 'Your shelf-checked prices override my estimates everywhere in the app.'
+            : `Prices are my estimates from ${PRICES_CHECKED} — Aldi doesn't publish real ones. Correct them from a shelf label and every total gets sharper.`}
+        </p>
+        <button className="btn ghost" style={{ width: '100%' }} onClick={onCheckPrices}>
+          {corrected > 0 ? 'Edit prices' : 'Check prices in the shop'}
+        </button>
+      </div>
     </div>
   )
 }

@@ -2,10 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PlanSetup, Recipe } from '../types'
 import { EQUIPMENT_ICON } from '../types'
 import { costPerPortion, filterRecipes, money, rankRecipes } from '../lib/cost'
+import type { PriceBook } from '../lib/prices'
 
 interface Props {
   setup: PlanSetup
   recipes: Recipe[]
+  book: PriceBook
   liked: string[]
   passed: string[]
   onLike: (id: string) => void
@@ -16,7 +18,7 @@ interface Props {
 /** How far you have to drag before it counts as a decision. */
 const THRESHOLD = 110
 
-export function SwipeScreen({ setup, recipes, liked, passed, onLike, onPass, onReset }: Props) {
+export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPass, onReset }: Props) {
   const [search, setSearch] = useState('')
   const [dx, setDx] = useState(0)
   const [exiting, setExiting] = useState<{ id: string; dir: 1 | -1 } | null>(null)
@@ -24,9 +26,9 @@ export function SwipeScreen({ setup, recipes, liked, passed, onLike, onPass, onR
 
   const queue = useMemo(() => {
     const eligible = filterRecipes(recipes, setup, search)
-    const ranked = rankRecipes(eligible, setup)
+    const ranked = rankRecipes(eligible, setup, book)
     return ranked.filter(r => !liked.includes(r.id) && !passed.includes(r.id))
-  }, [recipes, setup, search, liked, passed])
+  }, [recipes, setup, book, search, liked, passed])
 
   const enough = liked.length >= setup.recipeCount
   const top = queue[0]
@@ -119,7 +121,7 @@ export function SwipeScreen({ setup, recipes, liked, passed, onLike, onPass, onR
         {next && (
           <div className="card" style={{ transform: 'scale(0.96) translateY(10px)', opacity: 0.6 }}>
             <Art recipe={next} />
-            <Body recipe={next} />
+            <Body recipe={next} book={book} />
           </div>
         )}
 
@@ -134,7 +136,7 @@ export function SwipeScreen({ setup, recipes, liked, passed, onLike, onPass, onR
           <span className="stamp yes" style={{ opacity: Math.max(0, offset / THRESHOLD) }}>YES</span>
           <span className="stamp no" style={{ opacity: Math.max(0, -offset / THRESHOLD) }}>NOPE</span>
           <Art recipe={top} />
-          <Body recipe={top} />
+          <Body recipe={top} book={book} />
         </div>
       </div>
 
@@ -159,13 +161,13 @@ function Art({ recipe }: { recipe: Recipe }) {
   )
 }
 
-function Body({ recipe }: { recipe: Recipe }) {
+function Body({ recipe, book }: { recipe: Recipe; book: PriceBook }) {
   return (
     <div className="body">
       <h3>{recipe.name}</h3>
       <p>{recipe.blurb}</p>
       <div className="facts">
-        <span><b>{money(costPerPortion(recipe))}</b> a portion</span>
+        <span><b>{money(costPerPortion(recipe, book))}</b> a portion</span>
         <span><b>{recipe.proteinPerServing}g</b> protein</span>
         <span><b>{recipe.minutes}</b> min</span>
         <span>{recipe.equipment.map(e => EQUIPMENT_ICON[e]).join(' ')}</span>

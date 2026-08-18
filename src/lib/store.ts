@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { DEFAULT_SETUP, type PlanSetup } from '../types'
 import type { Selection } from './cost'
+import type { Overrides, PriceOverride } from './prices'
 
 const KEY = 'cooking-companion-v1'
 
-export type Step = 'store' | 'goals' | 'equipment' | 'plan' | 'swipe' | 'week'
+export type Step =
+  | 'store' | 'goals' | 'equipment' | 'plan' | 'swipe' | 'week'
+  /** Off the linear flow: dip in from anywhere, come back where you were. */
+  | 'prices'
 
 export interface AppState {
   setup: PlanSetup
@@ -16,6 +20,8 @@ export interface AppState {
   selections: Selection[]
   /** Recipes you have cooked and would cook again. Resurfaces them first. */
   cooked: string[]
+  /** Your shelf-checked prices. These beat whatever ships in the code. */
+  prices: Overrides
 }
 
 const EMPTY: AppState = {
@@ -24,6 +30,7 @@ const EMPTY: AppState = {
   passed: [],
   selections: [],
   cooked: [],
+  prices: {},
 }
 
 function load(): AppState {
@@ -77,7 +84,24 @@ export function useAppState() {
     setState(s => ({ ...s, selections }))
   }, [])
 
-  return { state, setState, patchSetup, like, pass, resetSwipes, setSelections }
+  const setPrice = useCallback((id: string, patch: PriceOverride | null) => {
+    setState(s => {
+      const prices = { ...s.prices }
+      // null means "forget my correction and go back to the shipped estimate".
+      if (patch === null) delete prices[id]
+      else prices[id] = { ...prices[id], ...patch, checked: new Date().toISOString().slice(0, 10) }
+      return { ...s, prices }
+    })
+  }, [])
+
+  const resetPrices = useCallback(() => {
+    setState(s => ({ ...s, prices: {} }))
+  }, [])
+
+  return {
+    state, setState, patchSetup, like, pass, resetSwipes, setSelections,
+    setPrice, resetPrices,
+  }
 }
 
 /**
