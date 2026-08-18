@@ -1,14 +1,17 @@
 import { useMemo, useState } from 'react'
+import { INGREDIENTS } from './data/ingredients'
 import { buildPriceBook, editedCount } from './lib/prices'
 import { bookAsList, buildRecipeBook, isRecipeEdited } from './lib/recipeEdits'
 import { exportData, useAppState, type Step } from './lib/store'
 import { EditRecipeScreen } from './screens/EditRecipe'
+import { ComingSoonScreen, HomeScreen } from './screens/Home'
 import { EquipmentScreen, GoalsScreen, PlanScreen, StoreScreen } from './screens/Setup'
 import { PricesScreen } from './screens/Prices'
+import { RecipeListScreen } from './screens/RecipeList'
 import { SwipeScreen } from './screens/Swipe'
 import { WeekScreen } from './screens/Week'
 
-/** The linear flow. 'prices' and 'edit' sit outside it - dip in, come back. */
+/** The linear planning flow. Everything else hangs off the home screen. */
 const STEPS: Step[] = ['store', 'goals', 'equipment', 'plan', 'swipe', 'week']
 
 export default function App() {
@@ -16,8 +19,8 @@ export default function App() {
     state, patchSetup, like, pass, resetSwipes,
     setPrice, resetPrices, setRecipeEdit, resetRecipe,
   } = useAppState()
-  const [step, setStep] = useState<Step>('store')
-  const [returnTo, setReturnTo] = useState<Step>('store')
+  const [step, setStep] = useState<Step>('home')
+  const [returnTo, setReturnTo] = useState<Step>('home')
   const [editingId, setEditingId] = useState<string | null>(null)
 
   // Your corrections, layered over what ships in the code. Everything that
@@ -32,14 +35,16 @@ export default function App() {
   const corrected = editedCount(state.prices)
 
   const index = STEPS.indexOf(step)
+  const inFlow = index >= 0
   const go = (delta: number) => {
     const next = STEPS[index + delta]
     if (next) setStep(next)
+    else if (index + delta < 0) setStep('home')
   }
 
-  const openPrices = () => {
+  const openAside = (target: Step) => {
     setReturnTo(step)
-    setStep('prices')
+    setStep(target)
   }
 
   const openEditor = (id: string) => {
@@ -53,6 +58,27 @@ export default function App() {
     : step === 'swipe' ? state.liked.length > 0
     : true
 
+  // --- screens that stand on their own -------------------------------------
+
+  if (step === 'home') {
+    return (
+      <div className="app">
+        <HomeScreen
+          hasPlan={state.liked.length > 0}
+          recipeCount={recipeList.length}
+          pricesChecked={corrected}
+          pricesTotal={INGREDIENTS.length}
+          onStart={() => setStep('store')}
+          onShoppingList={() => setStep('week')}
+          onSingleMeal={() => openAside('single')}
+          onPastWeeks={() => openAside('sessions')}
+          onRecipes={() => openAside('recipes')}
+          onPrices={() => openAside('prices')}
+        />
+      </div>
+    )
+  }
+
   if (step === 'prices') {
     return (
       <div className="app">
@@ -62,6 +88,20 @@ export default function App() {
           onSet={setPrice}
           onResetAll={resetPrices}
           onDone={() => setStep(returnTo)}
+        />
+      </div>
+    )
+  }
+
+  if (step === 'recipes') {
+    return (
+      <div className="app">
+        <RecipeListScreen
+          recipes={recipeList}
+          book={book}
+          editedRecipes={editedRecipes}
+          onEdit={openEditor}
+          onBack={() => setStep('home')}
         />
       </div>
     )
@@ -81,6 +121,32 @@ export default function App() {
     )
   }
 
+  if (step === 'single') {
+    return (
+      <div className="app">
+        <ComingSoonScreen
+          title="Just one meal"
+          body="Pick one recipe, get its shopping list, cook it tonight — no weekly plan. Not built yet: it needs somewhere to keep a one-off separate from your week."
+          onBack={() => setStep('home')}
+        />
+      </div>
+    )
+  }
+
+  if (step === 'sessions') {
+    return (
+      <div className="app">
+        <ComingSoonScreen
+          title="Past weeks"
+          body="Every week you've planned, so you can pull up a recipe you cooked a fortnight ago. Not built yet: the app currently keeps only the week you're in."
+          onBack={() => setStep('home')}
+        />
+      </div>
+    )
+  }
+
+  // --- the planning flow ----------------------------------------------------
+
   return (
     <div className="app">
       <div className="progress">
@@ -88,7 +154,7 @@ export default function App() {
       </div>
 
       {step === 'store' && (
-        <StoreScreen setup={state.setup} patch={patchSetup} onCheckPrices={openPrices} corrected={corrected} />
+        <StoreScreen setup={state.setup} patch={patchSetup} onCheckPrices={() => openAside('prices')} corrected={corrected} />
       )}
       {step === 'goals' && <GoalsScreen setup={state.setup} patch={patchSetup} />}
       {step === 'equipment' && <EquipmentScreen setup={state.setup} patch={patchSetup} />}
@@ -116,13 +182,17 @@ export default function App() {
           corrected={corrected}
           editedRecipes={editedRecipes}
           onBack={() => setStep('swipe')}
-          onCheckPrices={openPrices}
+          onCheckPrices={() => openAside('prices')}
           onEditRecipe={openEditor}
         />
       )}
 
       <div className="footer">
-        {index > 0 && <button className="btn ghost" onClick={() => go(-1)}>Back</button>}
+        {inFlow && (
+          <button className="btn ghost" onClick={() => (step === 'week' ? setStep('home') : go(-1))}>
+            {step === 'store' || step === 'week' ? 'Home' : 'Back'}
+          </button>
+        )}
 
         {step === 'week' ? (
           <button className="btn ghost" style={{ flex: 1 }} onClick={() => exportData(state)}>

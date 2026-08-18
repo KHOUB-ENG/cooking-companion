@@ -346,3 +346,77 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
    one that gets the colour. */
 .adds.shares { background: var(--accent-soft); }
 .adds.shares .amount { color: var(--accent); }
+
+/* --- home screen -------------------------------------------------------- */
+
+.home { padding-top: 8px; }
+
+.hero {
+  display: block;
+  width: 100%;
+  border-radius: 20px;
+  margin-bottom: 18px;
+}
+
+.hero.fallback {
+  aspect-ratio: 1;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 6px;
+}
+.hero.fallback .mark { font-size: 64px; }
+.hero.fallback h1 { font-size: 32px; margin: 0; }
+.hero.fallback p { color: var(--muted); }
+
+.hero-cta {
+  width: 100%;
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #241205;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+.hero-cta .big { font-size: 21px; font-weight: 800; letter-spacing: -0.01em; }
+.hero-cta .small { font-size: 13px; font-weight: 600; opacity: 0.75; }
+
+.home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.home-tile {
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 108px;
+}
+.home-tile.wide { grid-column: 1 / -1; min-height: 0; }
+.home-tile .ico { font-size: 24px; margin-bottom: 2px; }
+.home-tile .label { font-weight: 650; font-size: 16px; }
+.home-tile .note { color: var(--muted); font-size: 13px; }
+
+/* --- recipe list -------------------------------------------------------- */
+
+.recipe-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.recipe-row .emoji { font-size: 26px; flex: 0 0 auto; }
+.recipe-row .text { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.recipe-row .n { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.recipe-row .d { color: var(--muted); font-size: 13px; }
+.recipe-row .chev { color: var(--muted); font-size: 22px; flex: 0 0 auto; }

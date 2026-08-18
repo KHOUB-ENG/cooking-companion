@@ -7,7 +7,12 @@ import type { RecipeOverride, RecipeOverrides } from './recipeEdits'
 const KEY = 'cooking-companion-v1'
 
 export type Step =
+  /** The kitchen. Everything hangs off here. */
+  | 'home'
+  /** The linear planning flow. */
   | 'store' | 'goals' | 'equipment' | 'plan' | 'swipe' | 'week'
+  /** Reached from home: browse the book, one-off meal, previous weeks. */
+  | 'recipes' | 'single' | 'sessions'
   /** Off the linear flow: dip in from anywhere, come back where you were. */
   | 'prices'
   /** Editing one recipe, reached from your week. */
