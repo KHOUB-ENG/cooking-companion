@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#12100e"/>
+  <!-- steam -->
+  <g stroke="#ff8a3d" stroke-width="18" stroke-linecap="round" opacity="0.55" fill="none">
+    <path d="M196 150 q22 -26 0 -52"/>
+    <path d="M256 138 q22 -26 0 -52"/>
+    <path d="M316 150 q22 -26 0 -52"/>
+  </g>
+  <!-- bowl -->
+  <path d="M108 252 h296 a148 148 0 0 1 -296 0 z" fill="#ff8a3d"/>
+  <rect x="92" y="228" width="328" height="30" rx="15" fill="#ffb078"/>
+  <!-- base -->
+  <rect x="196" y="404" width="120" height="26" rx="13" fill="#ff8a3d" opacity="0.7"/>
+</svg>
