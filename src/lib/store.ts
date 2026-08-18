@@ -3,12 +3,15 @@ import { DEFAULT_SETUP, type PlanSetup } from '../types'
 import type { Selection } from './cost'
 import type { Overrides, PriceOverride } from './prices'
 import type { RecipeOverride, RecipeOverrides } from './recipeEdits'
+import { MAX_SESSIONS, type Session } from './sessions'
 
 const KEY = 'cooking-companion-v1'
 
 export type Step =
   /** The kitchen. Everything hangs off here. */
   | 'home'
+  /** One committed plan: its shopping list and its recipes. */
+  | 'session'
   /** The linear planning flow. */
   | 'store' | 'goals' | 'equipment' | 'plan' | 'swipe' | 'week'
   /** Reached from home: browse the book, one-off meal, previous weeks. */
@@ -32,6 +35,10 @@ export interface AppState {
   prices: Overrides
   /** Your changes to recipes you've cooked. Also beat the shipped versions. */
   recipeEdits: RecipeOverrides
+  /** Plans you committed to, newest last. Each one is self-contained. */
+  sessions: Session[]
+  /** The one you're currently shopping for and cooking from. */
+  currentSessionId: string | null
 }
 
 const EMPTY: AppState = {
@@ -42,6 +49,8 @@ const EMPTY: AppState = {
   cooked: [],
   prices: {},
   recipeEdits: {},
+  sessions: [],
+  currentSessionId: null,
 }
 
 function load(): AppState {
@@ -113,6 +122,49 @@ export function useAppState() {
     setState(s => ({ ...s, recipeEdits: { ...s.recipeEdits, [id]: patch } }))
   }, [])
 
+  const addSession = useCallback((session: Session) => {
+    setState(s => ({
+      ...s,
+      // Oldest first, capped - localStorage is small and this is a phone.
+      sessions: [...s.sessions, session].slice(-MAX_SESSIONS),
+      currentSessionId: session.id,
+    }))
+  }, [])
+
+  const updateSession = useCallback((id: string, patch: Partial<Session>) => {
+    setState(s => ({
+      ...s,
+      sessions: s.sessions.map(x => (x.id === id ? { ...x, ...patch } : x)),
+    }))
+  }, [])
+
+  const deleteSession = useCallback((id: string) => {
+    setState(s => ({
+      ...s,
+      sessions: s.sessions.filter(x => x.id !== id),
+      currentSessionId: s.currentSessionId === id ? null : s.currentSessionId,
+    }))
+  }, [])
+
+  /** Tick an ingredient off in the shop, or a recipe off once you've cooked it. */
+  const toggleIn = useCallback((id: string, field: 'bought' | 'cooked', value: string) => {
+    setState(s => ({
+      ...s,
+      sessions: s.sessions.map(x => {
+        if (x.id !== id) return x
+        const list = x[field]
+        return {
+          ...x,
+          [field]: list.includes(value) ? list.filter(v => v !== value) : [...list, value],
+        }
+      }),
+    }))
+  }, [])
+
+  const setCurrentSession = useCallback((id: string | null) => {
+    setState(s => ({ ...s, currentSessionId: id }))
+  }, [])
+
   const resetRecipe = useCallback((id: string) => {
     setState(s => {
       const recipeEdits = { ...s.recipeEdits }
@@ -124,6 +176,7 @@ export function useAppState() {
   return {
     state, setState, patchSetup, like, pass, resetSwipes, setSelections,
     setPrice, resetPrices, setRecipeEdit, resetRecipe,
+    addSession, updateSession, deleteSession, toggleIn, setCurrentSession,
   }
 }
 

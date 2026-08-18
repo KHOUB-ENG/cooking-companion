@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import type { PlanSetup, Recipe } from '../types'
 import { EQUIPMENT_ICON } from '../types'
 import {
@@ -24,7 +24,6 @@ const THRESHOLD = 110
 export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPass, onReset }: Props) {
   const [search, setSearch] = useState('')
   const [dx, setDx] = useState(0)
-  const [exiting, setExiting] = useState<{ id: string; dir: 1 | -1 } | null>(null)
   const dragStart = useRef<number | null>(null)
 
   const recipeById = useMemo(
@@ -65,25 +64,23 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
   const top = queue[0]
   const next = queue[1]
 
-  // Commit the decision once the card has flown off screen.
-  useEffect(() => {
-    if (!exiting) return
-    const t = setTimeout(() => {
-      if (exiting.dir === 1) onLike(exiting.id)
-      else onPass(exiting.id)
-      setExiting(null)
-      setDx(0)
-    }, 180)
-    return () => clearTimeout(t)
-  }, [exiting, onLike, onPass])
-
+  /**
+   * Commit immediately. This used to defer the commit behind a 180ms timer so
+   * the card could fly off screen, and that timer was a bug farm: if anything
+   * re-rendered inside the window, the state updates fired from the callback
+   * were dropped and the swipe was silently lost. For a swipe app, eating
+   * someone's choice is the worst failure there is - so the decision lands the
+   * instant you make it, and the next card simply takes its place.
+   */
   function decide(dir: 1 | -1) {
-    if (!top || exiting) return
-    setExiting({ id: top.id, dir })
+    if (!top) return
+    if (dir === 1) onLike(top.id)
+    else onPass(top.id)
+    setDx(0)
+    dragStart.current = null
   }
 
   function onPointerDown(e: React.PointerEvent) {
-    if (exiting) return
     dragStart.current = e.clientX
     ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
   }
@@ -102,7 +99,7 @@ export function SwipeScreen({ setup, recipes, book, liked, passed, onLike, onPas
   }
 
   // --- what the top card looks like right now -------------------------------
-  const offset = exiting ? exiting.dir * 700 : dx
+  const offset = dx
   const dragging = dragStart.current !== null
   const cardStyle: React.CSSProperties = {
     transform: `translateX(${offset}px) rotate(${offset / 22}deg)`,

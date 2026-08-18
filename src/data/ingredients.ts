@@ -24,9 +24,10 @@ export const INGREDIENTS: Ingredient[] = [
   // --- bakery --------------------------------------------------------------
   { id: 'wraps', name: 'Tortilla wraps', aisle: 'bakery', unit: 'each', pack: { size: 8, price: 89 }, packLabel: '8 pack' },
   { id: 'bread', name: 'Bread', aisle: 'bakery', unit: 'g', pack: { size: 800, price: 89 }, packLabel: '800g loaf' },
+  { id: 'burgerbuns', name: 'Burger buns', aisle: 'bakery', unit: 'each', pack: { size: 4, price: 125 }, packLabel: '4 pack' },
 
   // --- meat & fish ---------------------------------------------------------
-  { id: 'beefmince', name: 'Beef mince (12%)', aisle: 'meat_fish', unit: 'g', pack: { size: 500, price: 289 }, packLabel: '500g pack' },
+  { id: 'beefmince', name: 'Beef mince (5%)', aisle: 'meat_fish', unit: 'g', pack: { size: 500, price: 349 }, packLabel: '500g pack' },
   { id: 'chickenbrst', name: 'Chicken breasts', aisle: 'meat_fish', unit: 'g', pack: { size: 650, price: 460 }, packLabel: '650g pack' },
   { id: 'chickenthgh', name: 'Chicken thighs', aisle: 'meat_fish', unit: 'g', pack: { size: 1000, price: 350 }, packLabel: '1kg pack' },
   { id: 'sausages', name: 'Sausages', aisle: 'meat_fish', unit: 'each', pack: { size: 8, price: 189 }, packLabel: '8 pack' },
@@ -69,6 +70,8 @@ export const INGREDIENTS: Ingredient[] = [
   { id: 'chilliflake', name: 'Chilli flakes', aisle: 'cupboard', unit: 'g', pack: { size: 32, price: 89 }, packLabel: '32g jar', staple: true },
   { id: 'mixedherbs', name: 'Mixed herbs', aisle: 'cupboard', unit: 'g', pack: { size: 11, price: 79 }, packLabel: '11g jar', staple: true },
   { id: 'soysauce', name: 'Soy sauce', aisle: 'cupboard', unit: 'ml', pack: { size: 150, price: 79 }, packLabel: '150ml', staple: true },
+  { id: 'turmeric', name: 'Ground turmeric', aisle: 'cupboard', unit: 'g', pack: { size: 40, price: 119 }, packLabel: '40g jar', staple: true },
+  { id: 'cinnamon', name: 'Ground cinnamon', aisle: 'cupboard', unit: 'g', pack: { size: 38, price: 109 }, packLabel: '38g jar', staple: true },
 
   // --- frozen --------------------------------------------------------------
   { id: 'peas', name: 'Frozen peas', aisle: 'frozen', unit: 'g', pack: { size: 900, price: 135 }, packLabel: '900g bag' },

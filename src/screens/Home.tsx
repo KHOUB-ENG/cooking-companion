@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
 interface Props {
-  /** Is there a plan already built this week? Decides the shopping list state. */
-  hasPlan: boolean
+  /** Live state for the shop tile: progress, or why there's nothing yet. */
+  shopNote: string
+  pastCount: number
   recipeCount: number
   pricesChecked: number
   pricesTotal: number
@@ -12,12 +13,13 @@ interface Props {
   onPastWeeks: () => void
   onRecipes: () => void
   onPrices: () => void
+  onExport: () => void
 }
 
 export function HomeScreen(props: Props) {
   const {
-    hasPlan, recipeCount, pricesChecked, pricesTotal,
-    onStart, onShoppingList, onSingleMeal, onPastWeeks, onRecipes, onPrices,
+    shopNote, pastCount, recipeCount, pricesChecked, pricesTotal,
+    onStart, onShoppingList, onSingleMeal, onPastWeeks, onRecipes, onPrices, onExport,
   } = props
 
   // If the artwork isn't in /public yet, drop it rather than show a broken image.
@@ -49,7 +51,7 @@ export function HomeScreen(props: Props) {
         <button className="home-tile" onClick={onShoppingList}>
           <span className="ico">🛒</span>
           <span className="label">This week's shop</span>
-          <span className="note">{hasPlan ? 'Ready to go' : 'No plan yet'}</span>
+          <span className="note">{shopNote}</span>
         </button>
 
         <button className="home-tile" onClick={onSingleMeal}>
@@ -61,7 +63,9 @@ export function HomeScreen(props: Props) {
         <button className="home-tile" onClick={onPastWeeks}>
           <span className="ico">📖</span>
           <span className="label">Past weeks</span>
-          <span className="note">What you cooked before</span>
+          <span className="note">
+            {pastCount === 0 ? 'Nothing saved yet' : `${pastCount} saved`}
+          </span>
         </button>
 
         <button className="home-tile" onClick={onRecipes}>
@@ -76,6 +80,14 @@ export function HomeScreen(props: Props) {
           <span className="note">{pricesChecked} of {pricesTotal} checked by you</span>
         </button>
       </div>
+
+      <button className="link" style={{ display: 'block', margin: '22px auto 0' }} onClick={onExport}>
+        Back up my data
+      </button>
+      <p className="tiny">
+        Everything lives on this phone. Nothing is on a server, so this file is
+        your only spare copy.
+      </p>
     </div>
   )
 }
