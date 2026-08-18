@@ -245,8 +245,8 @@ export function WeekScreen({
 
       <p className="tiny">
         {corrected > 0
-          ? `${corrected} of these prices you checked yourself. The rest are estimates from ${PRICES_CHECKED}.`
-          : `Every price here is an estimate from ${PRICES_CHECKED}, not real data.`}
+          ? `${corrected} of these prices you checked yourself. The rest are supermarket averages from ${PRICES_CHECKED}.`
+          : `Every price here is an average estimate from ${PRICES_CHECKED}, not a real shelf label.`}
         {' '}
         <button className="link" onClick={onCheckPrices}>Check prices</button>
       </p>

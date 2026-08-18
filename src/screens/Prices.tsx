@@ -16,8 +16,9 @@ interface Props {
 }
 
 /**
- * Shelf check. The shipped prices are estimates - there is no public Aldi
- * price feed - so this screen exists to let a real shelf label beat them.
+ * Shelf check. The shipped prices are supermarket averages, not real data -
+ * no shop publishes a usable price feed - so this screen exists to let a real
+ * shelf label beat them.
  * Your corrections are saved on this phone and feed straight into every total.
  */
 export function PricesScreen({ overrides, book, onSet, onResetAll, onDone }: Props) {
@@ -41,9 +42,9 @@ export function PricesScreen({ overrides, book, onSet, onResetAll, onDone }: Pro
     <div className="screen">
       <h1>Shelf check</h1>
       <p className="sub">
-        These prices are my estimates from {PRICES_CHECKED}, not real data — Aldi
-        doesn't publish one. Correct any of them from a shelf label and every
-        total in the app updates.
+        Rough supermarket averages from {PRICES_CHECKED}. No shop publishes a
+        usable price feed, so these are estimates — correct any of them from a
+        real shelf label and every total in the app updates.
       </p>
 
       <div className="panel" style={{ position: 'sticky', top: 0, zIndex: 5 }}>

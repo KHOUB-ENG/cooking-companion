@@ -4,9 +4,9 @@ import type { Ingredient } from '../types'
 /**
  * Your corrections to the shipped price table.
  *
- * The shipped prices are estimates - there is no public Aldi price feed, and
- * scraping one is fragile and against their terms. So the app treats its own
- * numbers as provisional and lets you overwrite any of them from a shelf label.
+ * The shipped prices are rough UK supermarket averages - no shop publishes a
+ * usable price feed, and scraping one is fragile and against their terms. So the
+ * app treats its own numbers as provisional and lets a real shelf label win.
  * Your edits live on your phone and win over whatever ships in the code.
  */
 export interface PriceOverride {

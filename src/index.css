@@ -478,3 +478,91 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
 
 /* the delete link sits alone under the content */
 .screen > .link.danger { display: block; margin: 18px auto 0; }
+
+/* --- cook mode ---------------------------------------------------------- */
+/* Standing up, phone on the counter, hands busy. Big type, one thing at a
+   time, nothing to hunt for. */
+
+.cook {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg);
+}
+
+.cook-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px var(--pad);
+  border-bottom: 1px solid var(--line);
+}
+.cook-exit {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--surface-2); font-size: 17px; flex: 0 0 auto;
+}
+.cook-dots { flex: 1; display: flex; gap: 3px; }
+.cook-dots span { flex: 1; height: 3px; border-radius: 2px; background: var(--line); }
+.cook-dots span.on { background: var(--accent); }
+.cook-count {
+  font-size: 13px; font-weight: 700; color: var(--muted);
+  font-variant-numeric: tabular-nums; flex: 0 0 auto;
+}
+
+.cook-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 26px var(--pad) 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cook-head { font-size: 26px; margin-bottom: 4px; }
+.cook-sub { color: var(--muted); font-size: 15px; }
+
+.cook-num {
+  display: inline-block;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-soft);
+  padding: 5px 10px; border-radius: 6px; margin-bottom: 18px;
+}
+.cook-step {
+  font-size: 26px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  font-weight: 550;
+  text-wrap: pretty;
+}
+
+.cook-ings { list-style: none; }
+.cook-ings li {
+  display: flex; gap: 14px; align-items: baseline;
+  padding: 12px 0; border-bottom: 1px solid var(--line);
+  font-size: 18px;
+}
+.cook-ings li:last-child { border-bottom: none; }
+.cook-ings b {
+  flex: 0 0 84px; text-align: right;
+  font-variant-numeric: tabular-nums; color: var(--accent);
+}
+
+.cook-timer {
+  margin-top: 26px; padding: 16px;
+  background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  display: flex; align-items: center; gap: 16px;
+}
+.cook-timer .clock {
+  font-size: 34px; font-weight: 800;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.02em;
+}
+.cook-timer .btn { flex: 1; padding: 13px; }
+.cook-timer.done { border-color: var(--accent); background: var(--accent-soft); }
+.cook-timer.done .clock { color: var(--accent); }
+.cook-timer .msg { font-weight: 650; color: var(--accent); }
+
+.cook-nav {
+  display: flex; gap: 10px;
+  padding: 14px var(--pad) calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+}
+.cook-nav .btn { padding: 18px; font-size: 18px; }

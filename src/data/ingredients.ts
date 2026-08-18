@@ -1,9 +1,10 @@
 import type { Ingredient } from '../types'
 
 /**
- * Aldi UK price table. Prices are in PENCE and are approximate shelf prices.
- * There is no public Aldi API, so these are seeded by hand and drift slowly.
- * Re-check them once a term and bump PRICES_CHECKED.
+ * UK supermarket price table. Prices are in PENCE and are rough averages of
+ * own-brand shelf prices - no supermarket publishes a usable price feed, so
+ * these are seeded by hand and drift slowly. They're a starting point: correct
+ * any of them from a real shelf label on the Prices screen and your number wins.
  */
 export const PRICES_CHECKED = 'August 2026'
 

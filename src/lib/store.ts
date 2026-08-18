@@ -13,9 +13,11 @@ export type Step =
   /** One committed plan: its shopping list and its recipes. */
   | 'session'
   /** The linear planning flow. */
-  | 'store' | 'goals' | 'equipment' | 'plan' | 'swipe' | 'week'
+  | 'goals' | 'equipment' | 'plan' | 'swipe' | 'week'
   /** Reached from home: browse the book, one-off meal, previous weeks. */
   | 'recipes' | 'single' | 'sessions'
+  /** Full-screen, one step at a time, while you're actually cooking. */
+  | 'cook'
   /** Off the linear flow: dip in from anywhere, come back where you were. */
   | 'prices'
   /** Editing one recipe, reached from your week. */

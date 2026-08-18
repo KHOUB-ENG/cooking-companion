@@ -5,9 +5,10 @@ import { buildPriceBook, editedCount } from './lib/prices'
 import { bookAsList, buildRecipeBook, isRecipeEdited } from './lib/recipeEdits'
 import { createSession, shoppingProgress } from './lib/sessions'
 import { exportData, useAppState, type Step } from './lib/store'
+import { CookScreen } from './screens/Cook'
 import { EditRecipeScreen } from './screens/EditRecipe'
 import { HomeScreen } from './screens/Home'
-import { EquipmentScreen, GoalsScreen, PlanScreen, StoreScreen } from './screens/Setup'
+import { EquipmentScreen, GoalsScreen, PlanScreen } from './screens/Setup'
 import { PricesScreen } from './screens/Prices'
 import { RecipeListScreen } from './screens/RecipeList'
 import { SessionScreen } from './screens/Session'
@@ -17,7 +18,7 @@ import { SwipeScreen } from './screens/Swipe'
 import { WeekScreen } from './screens/Week'
 
 /** The linear planning flow. Everything else hangs off the home screen. */
-const STEPS: Step[] = ['store', 'goals', 'equipment', 'plan', 'swipe', 'week']
+const STEPS: Step[] = ['goals', 'equipment', 'plan', 'swipe', 'week']
 
 export default function App() {
   const {
@@ -27,6 +28,7 @@ export default function App() {
   } = useAppState()
   const [step, setStep] = useState<Step>('home')
   const [returnTo, setReturnTo] = useState<Step>('home')
+  const [cookingId, setCookingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [viewingId, setViewingId] = useState<string | null>(null)
 
@@ -117,10 +119,10 @@ export default function App() {
           recipeCount={recipeList.length}
           pricesChecked={corrected}
           pricesTotal={INGREDIENTS.length}
-          onStart={() => setStep('store')}
+          onStart={() => setStep('goals')}
           onShoppingList={() => {
             if (current) openSession(current.id, 'home')
-            else setStep(state.liked.length > 0 ? 'week' : 'store')
+            else setStep(state.liked.length > 0 ? 'week' : 'goals')
           }}
           onSingleMeal={() => openAside('single')}
           onPastWeeks={() => openAside('sessions')}
@@ -139,10 +141,29 @@ export default function App() {
           session={viewing}
           onToggle={toggleIn}
           onDelete={id => { deleteSession(id); setViewingId(null); setStep('home') }}
+          onCook={id => { setCookingId(id); setStep('cook') }}
           onBack={() => { setViewingId(null); setStep(returnTo) }}
           backLabel={returnTo === 'sessions' ? 'Back to past weeks' : 'Back to the kitchen'}
         />
       </div>
+    )
+  }
+
+  if (step === 'cook' && viewing && cookingId && viewing.recipes[cookingId]) {
+    const sel = viewing.selections.find(x => x.recipeId === cookingId)
+    return (
+      <CookScreen
+        recipe={viewing.recipes[cookingId]}
+        portions={sel?.portions ?? viewing.recipes[cookingId].baseServings}
+        prices={viewing.prices}
+        cooked={viewing.cooked.includes(cookingId)}
+        onFinish={() => {
+          if (!viewing.cooked.includes(cookingId)) toggleIn(viewing.id, 'cooked', cookingId)
+          setCookingId(null)
+          setStep('session')
+        }}
+        onExit={() => { setCookingId(null); setStep('session') }}
+      />
     )
   }
 
@@ -222,9 +243,6 @@ export default function App() {
         {STEPS.map((s, i) => <span key={s} className={i <= index ? 'on' : ''} />)}
       </div>
 
-      {step === 'store' && (
-        <StoreScreen setup={state.setup} patch={patchSetup} onCheckPrices={() => openAside('prices')} corrected={corrected} />
-      )}
       {step === 'goals' && <GoalsScreen setup={state.setup} patch={patchSetup} />}
       {step === 'equipment' && <EquipmentScreen setup={state.setup} patch={patchSetup} />}
       {step === 'plan' && <PlanScreen setup={state.setup} patch={patchSetup} recipes={recipeList} />}
@@ -259,7 +277,7 @@ export default function App() {
       <div className="footer">
         {inFlow && (
           <button className="btn ghost" onClick={() => (step === 'week' ? setStep('home') : go(-1))}>
-            {step === 'store' || step === 'week' ? 'Home' : 'Back'}
+            {step === 'goals' || step === 'week' ? 'Home' : 'Back'}
           </button>
         )}
 

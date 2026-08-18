@@ -156,8 +156,8 @@ Rules for a new ingredient:
 
 - `aisle` must be one of: `fruit_veg`, `bakery`, `meat_fish`, `dairy_eggs`,
   `tins_jars`, `pasta_rice`, `cupboard`, `frozen`
-- `pack.size` is the pack Aldi actually sells, in the unit you chose
-- `pack.price` is in **integer pence** (£1.45 → `145`). Estimate an Aldi own-brand
+- `pack.size` is a typical supermarket pack size, in the unit you chose
+- `pack.price` is in **integer pence** (£1.45 → `145`). Estimate a UK own-brand
   price and say in your notes that it's an estimate needing checking
 - Add `staple: true` only for things bought once a term — spices, oil, flour,
   honey, condiments. Staples are excluded from the weekly shopping total

@@ -2,7 +2,6 @@ import {
   DIET_LABEL, EQUIPMENT_ICON, EQUIPMENT_LABEL, GOAL_LABEL,
   type Diet, type Equipment, type Goal, type PlanSetup, type Recipe,
 } from '../types'
-import { PRICES_CHECKED } from '../data/ingredients'
 import { filterRecipes, money, shapeAdvice } from '../lib/cost'
 
 interface Props {
@@ -14,58 +13,7 @@ function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter(v => v !== value) : [...list, value]
 }
 
-// --- 1. where are you shopping? --------------------------------------------
-
-const STORES = [
-  { id: 'aldi' as const, name: 'Aldi', note: 'Prices loaded', emoji: '🛒', ready: true },
-  { id: 'lidl', name: 'Lidl', note: 'Coming soon', emoji: '🛒', ready: false },
-  { id: 'tesco', name: 'Tesco', note: 'Coming soon', emoji: '🛒', ready: false },
-  { id: 'sainsburys', name: "Sainsbury's", note: 'Coming soon', emoji: '🛒', ready: false },
-]
-
-interface StoreProps extends Props {
-  onCheckPrices: () => void
-  corrected: number
-}
-
-export function StoreScreen({ setup, onCheckPrices, corrected }: StoreProps) {
-  return (
-    <div className="screen">
-      <h1>Where are you shopping?</h1>
-      <p className="sub">This sets the prices and the order of your shopping list.</p>
-      <div className="grid">
-        {STORES.map(s => (
-          <button
-            key={s.id}
-            className={`tile ${setup.store === s.id ? 'on' : ''}`}
-            disabled={!s.ready}
-            style={{ opacity: s.ready ? 1 : 0.4 }}
-          >
-            <span className="big">{s.emoji}</span>
-            <span className="name">{s.name}</span>
-            <span className="note">{s.note}</span>
-          </button>
-        ))}
-      </div>
-      <div className="panel" style={{ marginTop: 20 }}>
-        <div className="money-row">
-          <span className="k">Price accuracy</span>
-          <span className="v">{corrected} / 50 checked</span>
-        </div>
-        <p style={{ color: 'var(--muted)', fontSize: 14, margin: '4px 0 12px' }}>
-          {corrected > 0
-            ? 'Your shelf-checked prices override my estimates everywhere in the app.'
-            : `Prices are my estimates from ${PRICES_CHECKED} — Aldi doesn't publish real ones. Correct them from a shelf label and every total gets sharper.`}
-        </p>
-        <button className="btn ghost" style={{ width: '100%' }} onClick={onCheckPrices}>
-          {corrected > 0 ? 'Edit prices' : 'Check prices in the shop'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// --- 2. what are you going for this week? ----------------------------------
+// --- 1. what are you going for this week? ----------------------------------
 
 export function GoalsScreen({ setup, patch }: Props) {
   const goals = Object.keys(GOAL_LABEL) as Goal[]
@@ -105,7 +53,7 @@ export function GoalsScreen({ setup, patch }: Props) {
   )
 }
 
-// --- 3. what kit have you actually got? ------------------------------------
+// --- 2. what kit have you actually got? ------------------------------------
 
 export function EquipmentScreen({ setup, patch }: Props) {
   const kit = Object.keys(EQUIPMENT_LABEL) as Equipment[]
@@ -133,7 +81,7 @@ export function EquipmentScreen({ setup, patch }: Props) {
   )
 }
 
-// --- 4. how much cooking, and for how much money? --------------------------
+// --- 3. how much cooking, and for how much money? --------------------------
 
 function Stepper(props: {
   label: string

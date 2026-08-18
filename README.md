@@ -26,7 +26,7 @@ Then open the localhost link it prints.
 | Path | What it is |
 | --- | --- |
 | `src/types.ts` | The data model — recipes, ingredients, equipment, the plan |
-| `src/data/ingredients.ts` | Aldi price table, in pence. Hand-seeded |
+| `src/data/ingredients.ts` | Price table, in pence. Hand-seeded averages |
 | `src/data/recipes.ts` | The recipe pack (10 seeds; ~70 is the goal) |
 | `src/lib/cost.ts` | **The brain.** Pack maths, filtering, ranking |
 | `src/lib/store.ts` | localStorage persistence + data export |
@@ -56,9 +56,11 @@ why the app also tracks which ingredients get used by more than one recipe.
 
 ## Prices
 
-There's no public Aldi API and scraping supermarkets is fragile and against
-their terms, so `ingredients.ts` is seeded by hand. Re-check it once a term
-and bump `PRICES_CHECKED`.
+No UK supermarket publishes a usable price feed, and scraping one is fragile
+and against their terms, so `ingredients.ts` holds hand-seeded averages. They
+are a starting point: the Prices screen lets a real shelf label override any of
+them, saved per-phone. Re-check the defaults once a term and bump
+`PRICES_CHECKED`.
 
 ## Deploying
 

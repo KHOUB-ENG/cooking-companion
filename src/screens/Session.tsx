@@ -9,11 +9,12 @@ interface Props {
   session: Session
   onToggle: (id: string, field: 'bought' | 'cooked', value: string) => void
   onDelete: (id: string) => void
+  onCook: (recipeId: string) => void
   onBack: () => void
   backLabel: string
 }
 
-export function SessionScreen({ session, onToggle, onDelete, onBack, backLabel }: Props) {
+export function SessionScreen({ session, onToggle, onDelete, onCook, onBack, backLabel }: Props) {
   const [open, setOpen] = useState<string | null>(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -138,13 +139,17 @@ export function SessionScreen({ session, onToggle, onDelete, onBack, backLabel }
 
                 {recipe.tip && <div className="tip"><b>Don't get it wrong:</b> {recipe.tip}</div>}
 
-                <button
-                  className="btn ghost"
-                  style={{ width: '100%', marginTop: 14 }}
-                  onClick={() => onToggle(session.id, 'cooked', recipe.id)}
-                >
-                  {done ? 'Not cooked yet' : "I've cooked this"}
-                </button>
+                <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+                  <button
+                    className="btn ghost"
+                    onClick={() => onToggle(session.id, 'cooked', recipe.id)}
+                  >
+                    {done ? 'Not cooked' : 'Mark cooked'}
+                  </button>
+                  <button className="btn" onClick={() => onCook(recipe.id)}>
+                    Cook it now
+                  </button>
+                </div>
               </div>
             )}
           </div>

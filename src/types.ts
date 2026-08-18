@@ -3,9 +3,7 @@
 // drift by a penny. Quantities are always in the ingredient's own `unit`.
 // ---------------------------------------------------------------------------
 
-export type StoreId = 'aldi'
-
-/** Shopping-list order. This is roughly the walk through an Aldi. */
+/** Shopping-list order. Roughly the walk through a UK supermarket. */
 export type Aisle =
   | 'fruit_veg'
   | 'bakery'
@@ -115,7 +113,6 @@ export interface Recipe {
 // --- what the user builds up as they move through the app -------------------
 
 export interface PlanSetup {
-  store: StoreId
   goals: Goal[]
   diets: Diet[]
   equipment: Equipment[]
@@ -128,7 +125,6 @@ export interface PlanSetup {
 }
 
 export const DEFAULT_SETUP: PlanSetup = {
-  store: 'aldi',
   goals: [],
   diets: [],
   equipment: ['hob', 'microwave', 'kettle', 'freezer'],
