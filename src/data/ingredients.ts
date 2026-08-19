@@ -93,6 +93,27 @@ export const INGREDIENTS: Ingredient[] = [
   { id: 'flour', name: 'Plain flour', aisle: 'cupboard', unit: 'g', pack: { size: 1500, price: 79 }, packLabel: '1.5kg bag', staple: true },
   { id: 'salmon', name: 'Frozen salmon fillets', aisle: 'frozen', unit: 'g', pack: { size: 480, price: 385 }, packLabel: '4 fillets, 480g' },
   { id: 'frozenchips', name: 'Frozen chips', aisle: 'frozen', unit: 'g', pack: { size: 1500, price: 175 }, packLabel: '1.5kg bag' },
+  // --- added with the 40-recipe expansion ---------------------------------
+{ id: 'cucumber', name: 'Cucumber', aisle: 'fruit_veg', unit: 'each', pack: { size: 1, price: 55 }, packLabel: '1 cucumber' },
+  { id: 'cabbage', name: 'White cabbage', aisle: 'fruit_veg', unit: 'each', pack: { size: 1, price: 69 }, packLabel: '1 cabbage' },
+  { id: 'parsley', name: 'Flat parsley', aisle: 'fruit_veg', unit: 'each', pack: { size: 1, price: 55 }, packLabel: 'a bunch' },
+  { id: 'pitta', name: 'Pitta breads', aisle: 'bakery', unit: 'each', pack: { size: 6, price: 85 }, packLabel: '6 pack' },
+  { id: 'naan', name: 'Naan breads', aisle: 'bakery', unit: 'each', pack: { size: 2, price: 89 }, packLabel: '2 pack' },
+  { id: 'mozzarella', name: 'Mozzarella', aisle: 'dairy_eggs', unit: 'g', pack: { size: 125, price: 55 }, packLabel: '125g ball' },
+  { id: 'tofu', name: 'Firm tofu', aisle: 'dairy_eggs', unit: 'g', pack: { size: 396, price: 179 }, packLabel: '396g block' },
+  { id: 'butterbean', name: 'Butter beans', aisle: 'tins_jars', unit: 'g', pack: { size: 400, price: 45 }, packLabel: '400g tin' },
+  { id: 'pesto', name: 'Green pesto', aisle: 'tins_jars', unit: 'g', pack: { size: 190, price: 115 }, packLabel: '190g jar' },
+  { id: 'tikkasauce', name: 'Tikka masala sauce', aisle: 'tins_jars', unit: 'g', pack: { size: 500, price: 155 }, packLabel: '500g jar' },
+  { id: 'couscous', name: 'Couscous', aisle: 'pasta_rice', unit: 'g', pack: { size: 500, price: 99 }, packLabel: '500g bag' },
+  { id: 'gnocchi', name: 'Gnocchi', aisle: 'pasta_rice', unit: 'g', pack: { size: 500, price: 145 }, packLabel: '500g pack' },
+  { id: 'mustard', name: 'Dijon mustard', aisle: 'cupboard', unit: 'g', pack: { size: 180, price: 45 }, packLabel: '180g jar', staple: true },
+  { id: 'cornflour', name: 'Cornflour', aisle: 'cupboard', unit: 'g', pack: { size: 250, price: 65 }, packLabel: '250g tub', staple: true },
+  { id: 'sugar', name: 'Sugar', aisle: 'cupboard', unit: 'g', pack: { size: 1000, price: 89 }, packLabel: '1kg bag', staple: true },
+  { id: 'saffron', name: 'Saffron', aisle: 'cupboard', unit: 'g', pack: { size: 1, price: 299 }, packLabel: '1g tub', staple: true },
+  { id: 'tahini', name: 'Tahini', aisle: 'cupboard', unit: 'g', pack: { size: 300, price: 199 }, packLabel: '300g jar', staple: true },
+  { id: 'whitefish', name: 'Frozen white fish fillets', aisle: 'frozen', unit: 'g', pack: { size: 500, price: 349 }, packLabel: '4 fillets, 500g' },
+  { id: 'prawns', name: 'Frozen prawns', aisle: 'frozen', unit: 'g', pack: { size: 250, price: 249 }, packLabel: '250g bag' },
+  { id: 'frozenberries', name: 'Frozen berries', aisle: 'frozen', unit: 'g', pack: { size: 500, price: 175 }, packLabel: '500g bag' },
 ]
 
 export const INGREDIENT_BY_ID: Record<string, Ingredient> =
