@@ -4,12 +4,14 @@ interface Props {
   /** Live state for the shop tile: progress, or why there's nothing yet. */
   shopNote: string
   pastCount: number
+  fridgeCount: number
   recipeCount: number
   pricesChecked: number
   pricesTotal: number
   onStart: () => void
   onShoppingList: () => void
   onSingleMeal: () => void
+  onFridge: () => void
   onPastWeeks: () => void
   onRecipes: () => void
   onPrices: () => void
@@ -18,8 +20,8 @@ interface Props {
 
 export function HomeScreen(props: Props) {
   const {
-    shopNote, pastCount, recipeCount, pricesChecked, pricesTotal,
-    onStart, onShoppingList, onSingleMeal, onPastWeeks, onRecipes, onPrices, onExport,
+    shopNote, pastCount, fridgeCount, recipeCount, pricesChecked, pricesTotal,
+    onStart, onShoppingList, onSingleMeal, onFridge, onPastWeeks, onRecipes, onPrices, onExport,
   } = props
 
   // If the artwork isn't in /public yet, drop it rather than show a broken image.
@@ -58,6 +60,14 @@ export function HomeScreen(props: Props) {
           <span className="ico">🍽️</span>
           <span className="label">Just one meal</span>
           <span className="note">Cook something tonight</span>
+        </button>
+
+        <button className="home-tile" onClick={onFridge}>
+          <span className="ico">🥫</span>
+          <span className="label">In the fridge</span>
+          <span className="note">
+            {fridgeCount === 0 ? 'Use up what you have' : `${fridgeCount} added`}
+          </span>
         </button>
 
         <button className="home-tile" onClick={onPastWeeks}>

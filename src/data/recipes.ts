@@ -348,7 +348,7 @@ export const RECIPES: Recipe[] = [
     minutes: 15,
     skill: 1,
     equipment: ['hob', 'kettle'],
-    tags: ['breakfast', 'quick', 'cheapest', 'veggie', 'no_pork', 'no_beef', 'no_fish'],
+    tags: ['quick', 'cheapest', 'veggie', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 19,
     keeps: 'fridge',
     ingredients: [
@@ -1041,7 +1041,7 @@ export const RECIPES: Recipe[] = [
     minutes: 5,
     skill: 1,
     equipment: [],
-    tags: ['quick', 'cheapest', 'veggie', 'no_pork', 'no_beef', 'no_fish'],
+    tags: ['breakfast', 'quick', 'cheapest', 'veggie', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 19,
     keeps: 'fridge',
     ingredients: [
@@ -1404,7 +1404,7 @@ export const RECIPES: Recipe[] = [
     minutes: 20,
     skill: 2,
     equipment: ['hob'],
-    tags: ['veggie', 'cheapest', 'no_pork', 'no_beef', 'no_fish'],
+    tags: ['breakfast', 'veggie', 'cheapest', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 17,
     keeps: 'fresh',
     ingredients: [
@@ -1439,7 +1439,7 @@ export const RECIPES: Recipe[] = [
     minutes: 30,
     skill: 1,
     equipment: ['oven'],
-    tags: ['veggie', 'cheapest', 'batch_freeze', 'no_pork', 'no_beef', 'no_fish'],
+    tags: ['breakfast', 'veggie', 'cheapest', 'batch_freeze', 'no_pork', 'no_beef', 'no_fish'],
     proteinPerServing: 13,
     keeps: 'freezer',
     ingredients: [

@@ -16,7 +16,7 @@ export type Step =
   /** The linear planning flow. */
   | 'goals' | 'equipment' | 'plan' | 'swipe' | 'week'
   /** Reached from home: browse the book, one-off meal, previous weeks. */
-  | 'recipes' | 'recipe' | 'single' | 'sessions'
+  | 'recipes' | 'recipe' | 'single' | 'sessions' | 'fridge'
   /** Full-screen, one step at a time, while you're actually cooking. */
   | 'cook'
   /** Off the linear flow: dip in from anywhere, come back where you were. */
@@ -44,6 +44,10 @@ export interface AppState {
   sessions: Session[]
   /** The one you're currently shopping for and cooking from. */
   currentSessionId: string | null
+  /** Shuffles the deck. Changes every time you start a new week. */
+  deckSeed: number
+  /** Ingredient ids you've told the app are sitting in your fridge. */
+  fridge: string[]
   /**
    * What's in your cupboard. Remembered across weeks - buy olive oil once and
    * you shouldn't be asked about it every Sunday.
@@ -62,6 +66,8 @@ const EMPTY: AppState = {
   customRecipes: [],
   sessions: [],
   currentSessionId: null,
+  deckSeed: Math.floor(Math.random() * 1e9),
+  fridge: [],
   pantry: {},
 }
 
@@ -124,7 +130,11 @@ export function useAppState() {
   }, [])
 
   const resetSwipes = useCallback(() => {
-    setState(s => ({ ...s, liked: [], passed: [], selections: [] }))
+    setState(s => ({
+      ...s,
+      liked: [], passed: [], selections: [],
+      deckSeed: Math.floor(Math.random() * 1e9),
+    }))
   }, [])
 
   const setSelections = useCallback((selections: Selection[]) => {
@@ -159,6 +169,8 @@ export function useAppState() {
       // your second week opens with last week's picks already made.
       liked: [],
       passed: [],
+      // A fresh shuffle, so next week doesn't open on the same card.
+      deckSeed: Math.floor(Math.random() * 1e9),
     }))
   }, [])
 
@@ -190,6 +202,17 @@ export function useAppState() {
         }
       }),
     }))
+  }, [])
+
+  const toggleFridge = useCallback((id: string) => {
+    setState(s => ({
+      ...s,
+      fridge: s.fridge.includes(id) ? s.fridge.filter(f => f !== id) : [...s.fridge, id],
+    }))
+  }, [])
+
+  const clearFridge = useCallback(() => {
+    setState(s => ({ ...s, fridge: [] }))
   }, [])
 
   const setPantry = useCallback((id: string, have: boolean | undefined) => {
@@ -229,6 +252,7 @@ export function useAppState() {
     state, setState, patchSetup, like, pass, unlike, resetSwipes, setSelections,
     setPrice, resetPrices, setRecipeEdit, resetRecipe, addCustomRecipe, deleteCustomRecipe,
     addSession, updateSession, deleteSession, toggleIn, setCurrentSession, setPantry,
+    toggleFridge, clearFridge,
   }
 }
 

@@ -158,8 +158,9 @@ export function portionsForRecipe(recipe: Recipe, target: number): number {
 // to satisfy comes from one question: how long does the food have to survive?
 //
 //   1 portion   - you eat it tonight. Anything goes.
-//   2 portions  - tonight and tomorrow. It has to be decent from the fridge.
-//   3+ portions - cooked Sunday, eaten Thursday. It has to freeze.
+//   2-3 portions - eaten over the next few days, so it has to be good from the
+//                  fridge, which is most cooked food.
+//   4+ portions - cooked Sunday, still being eaten Thursday. It has to freeze.
 //
 // That's derived, not asked. The app already knows the portions per cook, so it
 // can rule out the smash burger for a Sunday batch without a questionnaire.
@@ -176,8 +177,12 @@ export interface Slot {
 }
 
 function needsFor(portions: number): Keeps {
+  // Calibrated against how long a fridge actually holds cooked food. The first
+  // cut of this demanded 'freezer' from 3 portions up, which meant the default
+  // plan (6 meals over 2 cooks) asked every slot to freeze and hid two thirds
+  // of the book. Three portions eaten Mon-Tue-Wed is a fridge job.
   if (portions <= 1) return 'fresh'
-  if (portions === 2) return 'fridge'
+  if (portions <= 3) return 'fridge'
   return 'freezer'
 }
 
@@ -430,6 +435,17 @@ export function marginalCost(
 }
 
 /** Goal-aware ordering, so the deck opens with cards you are likely to want. */
+/**
+ * A stable pseudo-random number in [-1, 1] for a recipe under a given seed.
+ * Stable matters: the deck must not reshuffle itself on every render, but it
+ * should look different next week.
+ */
+function jitter(id: string, seed: number): number {
+  let h = seed >>> 0
+  for (let i = 0; i < id.length; i++) h = (Math.imul(h ^ id.charCodeAt(i), 2654435761) >>> 0)
+  return ((h % 2000) / 1000) - 1
+}
+
 export function rankRecipes(
   recipes: Recipe[],
   setup: PlanSetup,
@@ -437,6 +453,8 @@ export function rankRecipes(
   /** What you've already picked. Pass it and the deck becomes overlap-aware. */
   already: Selection[] = [],
   recipeById: Record<string, Recipe> = {},
+  /** Changes each week, so you don't get chilli first every single time. */
+  seed = 0,
 ): Recipe[] {
   const overlapAware = already.length > 0
   const target = mainMeals(setup) / Math.max(1, setup.recipeCount)
@@ -462,6 +480,10 @@ export function rankRecipes(
       )
       score -= m.addedCost / 25
     }
+
+    // Enough to shuffle recipes that score similarly, not enough to push a
+    // goal match (worth 10) below something that doesn't match at all.
+    score += jitter(recipe.id, seed) * 8
 
     return { recipe, score }
   })

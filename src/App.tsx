@@ -8,6 +8,7 @@ import { exportData, useAppState, type Step } from './lib/store'
 import { CookScreen } from './screens/Cook'
 import { EditRecipeScreen } from './screens/EditRecipe'
 import { HomeScreen } from './screens/Home'
+import { FridgeScreen } from './screens/Fridge'
 import { EquipmentScreen, GoalsScreen, PlanScreen } from './screens/Setup'
 import { PricesScreen } from './screens/Prices'
 import { RecipeScreen } from './screens/Recipe'
@@ -26,7 +27,7 @@ export default function App() {
     state, patchSetup, like, pass, unlike, resetSwipes,
     setPrice, resetPrices, setRecipeEdit, resetRecipe,
     addCustomRecipe, deleteCustomRecipe,
-    addSession, deleteSession, toggleIn, setPantry,
+    addSession, deleteSession, toggleIn, setPantry, toggleFridge, clearFridge,
   } = useAppState()
   const [step, setStep] = useState<Step>('home')
   const [returnTo, setReturnTo] = useState<Step>('home')
@@ -124,6 +125,7 @@ export default function App() {
         <HomeScreen
           shopNote={shopNote}
           pastCount={state.sessions.length}
+          fridgeCount={state.fridge.length}
           recipeCount={recipeList.length}
           pricesChecked={corrected}
           pricesTotal={INGREDIENTS.length}
@@ -133,6 +135,7 @@ export default function App() {
             else setStep(state.liked.length > 0 ? 'week' : 'goals')
           }}
           onSingleMeal={() => openAside('single')}
+          onFridge={() => openAside('fridge')}
           onPastWeeks={() => openAside('sessions')}
           onRecipes={() => openAside('recipes')}
           onPrices={() => openAside('prices')}
@@ -201,6 +204,22 @@ export default function App() {
     )
   }
 
+  if (step === 'fridge') {
+    return (
+      <div className="app">
+        <FridgeScreen
+          recipes={recipeList}
+          book={book}
+          have={state.fridge}
+          onToggle={toggleFridge}
+          onClear={clearFridge}
+          onOpen={id => { setViewingRecipe(id); setReturnTo('fridge'); setStep('recipe') }}
+          onBack={() => setStep('home')}
+        />
+      </div>
+    )
+  }
+
   if (step === 'single') {
     return (
       <div className="app">
@@ -258,7 +277,7 @@ export default function App() {
           isCustom={customIds.has(viewingRecipe)}
           onCook={id => { setCookingId(id); setReturnTo('recipe'); setStep('cook') }}
           onEdit={id => { setEditingId(id); setReturnTo('recipe'); setStep('edit') }}
-          onBack={() => { setViewingRecipe(null); setStep('recipes') }}
+          onBack={() => { setViewingRecipe(null); setStep(returnTo === 'fridge' ? 'fridge' : 'recipes') }}
         />
       </div>
     )
@@ -304,6 +323,7 @@ export default function App() {
           onUnlike={unlike}
           onReset={resetSwipes}
           onBuild={() => setStep('week')}
+          seed={state.deckSeed}
         />
       )}
 

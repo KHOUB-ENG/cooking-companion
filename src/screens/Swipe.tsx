@@ -19,13 +19,18 @@ interface Props {
   onUnlike: (id: string) => void
   onReset: () => void
   onBuild: () => void
+  /** Reshuffles the deck each week. */
+  seed: number
 }
 
 /** How far you have to drag before it counts as a decision. */
 const THRESHOLD = 110
 
 export function SwipeScreen(props: Props) {
-  const { setup, recipes, book, liked, passed, onLike, onPass, onUnlike, onReset, onBuild } = props
+  const {
+    setup, recipes, book, liked, passed,
+    onLike, onPass, onUnlike, onReset, onBuild, seed,
+  } = props
   const [search, setSearch] = useState('')
   const [dx, setDx] = useState(0)
   const dragStart = useRef<number | null>(null)
@@ -55,9 +60,9 @@ export function SwipeScreen(props: Props) {
       if (r.tags.includes('breakfast') !== wantBreakfast) return false
       return fitsSlot(r, slot)
     })
-    const ranked = rankRecipes(eligible, setup, book, already, recipeById)
+    const ranked = rankRecipes(eligible, setup, book, already, recipeById, seed)
     return ranked.filter(r => !liked.includes(r.id) && !passed.includes(r.id))
-  }, [recipes, setup, book, search, liked, passed, already, recipeById, slot])
+  }, [recipes, setup, book, search, liked, passed, already, recipeById, slot, seed])
 
   const top = queue[0]
   const next = queue[1]
