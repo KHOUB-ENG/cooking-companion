@@ -10,6 +10,7 @@ import { EditRecipeScreen } from './screens/EditRecipe'
 import { HomeScreen } from './screens/Home'
 import { EquipmentScreen, GoalsScreen, PlanScreen } from './screens/Setup'
 import { PricesScreen } from './screens/Prices'
+import { RecipeScreen } from './screens/Recipe'
 import { RecipeListScreen } from './screens/RecipeList'
 import { SessionScreen } from './screens/Session'
 import { SessionListScreen } from './screens/SessionList'
@@ -32,6 +33,7 @@ export default function App() {
   const [cookingId, setCookingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [viewingId, setViewingId] = useState<string | null>(null)
+  const [viewingRecipe, setViewingRecipe] = useState<string | null>(null)
 
   // Your corrections, layered over what ships in the code. Everything that
   // costs or cooks reads from these, never from the raw data files.
@@ -155,22 +157,35 @@ export default function App() {
     )
   }
 
-  if (step === 'cook' && viewing && cookingId && viewing.recipes[cookingId]) {
-    const sel = viewing.selections.find(x => x.recipeId === cookingId)
-    return (
-      <CookScreen
-        recipe={viewing.recipes[cookingId]}
-        portions={sel?.portions ?? viewing.recipes[cookingId].baseServings}
-        prices={viewing.prices}
-        cooked={viewing.cooked.includes(cookingId)}
-        onFinish={() => {
-          if (!viewing.cooked.includes(cookingId)) toggleIn(viewing.id, 'cooked', cookingId)
-          setCookingId(null)
-          setStep('session')
-        }}
-        onExit={() => { setCookingId(null); setStep('session') }}
-      />
-    )
+  if (step === 'cook' && cookingId) {
+    // Cook mode is reachable two ways: from a session (where the portions and
+    // the frozen prices come from the plan) or straight from a recipe.
+    const fromSession = viewing?.recipes[cookingId]
+    const recipe = fromSession ?? recipeBook[cookingId]
+    if (recipe) {
+      const portions = fromSession
+        ? viewing!.selections.find(x => x.recipeId === cookingId)?.portions ?? recipe.baseServings
+        : recipe.baseServings
+      return (
+        <CookScreen
+          recipe={recipe}
+          portions={portions}
+          prices={fromSession ? viewing!.prices : book}
+          cooked={!!fromSession && viewing!.cooked.includes(cookingId)}
+          onFinish={() => {
+            if (fromSession && !viewing!.cooked.includes(cookingId)) {
+              toggleIn(viewing!.id, 'cooked', cookingId)
+            }
+            setCookingId(null)
+            setStep(returnTo === 'recipe' ? 'recipe' : 'session')
+          }}
+          onExit={() => {
+            setCookingId(null)
+            setStep(returnTo === 'recipe' ? 'recipe' : 'session')
+          }}
+        />
+      )
+    }
   }
 
   if (step === 'sessions') {
@@ -221,13 +236,29 @@ export default function App() {
           book={book}
           editedRecipes={editedRecipes}
           customIds={customIds}
-          onEdit={openEditor}
+          onOpen={id => { setViewingRecipe(id); setReturnTo('recipes'); setStep('recipe') }}
           onNew={() => {
             const fresh = blankRecipe()
             addCustomRecipe(fresh)
             openEditor(fresh.id)
           }}
           onBack={() => setStep('home')}
+        />
+      </div>
+    )
+  }
+
+  if (step === 'recipe' && viewingRecipe && recipeBook[viewingRecipe]) {
+    return (
+      <div className="app">
+        <RecipeScreen
+          recipe={recipeBook[viewingRecipe]}
+          book={book}
+          edited={editedRecipes.has(viewingRecipe)}
+          isCustom={customIds.has(viewingRecipe)}
+          onCook={id => { setCookingId(id); setReturnTo('recipe'); setStep('cook') }}
+          onEdit={id => { setEditingId(id); setReturnTo('recipe'); setStep('edit') }}
+          onBack={() => { setViewingRecipe(null); setStep('recipes') }}
         />
       </div>
     )
@@ -258,7 +289,7 @@ export default function App() {
       </div>
 
       {step === 'goals' && <GoalsScreen setup={state.setup} patch={patchSetup} />}
-      {step === 'equipment' && <EquipmentScreen setup={state.setup} patch={patchSetup} />}
+      {step === 'equipment' && <EquipmentScreen setup={state.setup} patch={patchSetup} recipes={recipeList} />}
       {step === 'plan' && <PlanScreen setup={state.setup} patch={patchSetup} recipes={recipeList} />}
 
       {step === 'swipe' && (

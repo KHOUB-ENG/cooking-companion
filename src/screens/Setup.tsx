@@ -56,8 +56,20 @@ export function GoalsScreen({ setup, patch }: Props) {
 
 // --- 2. what kit have you actually got? ------------------------------------
 
-export function EquipmentScreen({ setup, patch }: Props) {
-  const kit = Object.keys(EQUIPMENT_LABEL) as Equipment[]
+interface EquipProps extends Props {
+  recipes: Recipe[]
+}
+
+export function EquipmentScreen({ setup, patch, recipes }: EquipProps) {
+  // Show what each tile actually unlocks. Three of them currently unlock
+  // nothing, and a tile that does nothing when you tap it is worse than no tile.
+  const counts = Object.fromEntries(
+    (Object.keys(EQUIPMENT_LABEL) as Equipment[]).map(e => [
+      e, recipes.filter(r => r.equipment.includes(e)).length,
+    ]),
+  ) as Record<Equipment, number>
+
+  const kit = (Object.keys(EQUIPMENT_LABEL) as Equipment[]).filter(e => counts[e] > 0)
 
   return (
     <div className="screen">
@@ -75,6 +87,7 @@ export function EquipmentScreen({ setup, patch }: Props) {
           >
             <span className="big">{EQUIPMENT_ICON[e]}</span>
             <span className="name">{EQUIPMENT_LABEL[e]}</span>
+            <span className="note">{counts[e]} {counts[e] === 1 ? 'recipe' : 'recipes'}</span>
           </button>
         ))}
       </div>

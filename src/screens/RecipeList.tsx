@@ -1,20 +1,21 @@
 import { useMemo, useState } from 'react'
 import { costPerPortion, money } from '../lib/cost'
+import { HAS_PHOTO } from '../data/photos'
 import type { PriceBook } from '../lib/prices'
-import type { Recipe } from '../types'
-import { EQUIPMENT_ICON } from '../types'
+import { EQUIPMENT_ICON, type Recipe } from '../types'
 
 interface Props {
   recipes: Recipe[]
   book: PriceBook
   editedRecipes: Set<string>
   customIds: Set<string>
-  onEdit: (id: string) => void
+  onOpen: (id: string) => void
   onNew: () => void
   onBack: () => void
 }
 
-export function RecipeListScreen({ recipes, book, editedRecipes, customIds, onEdit, onNew, onBack }: Props) {
+export function RecipeListScreen(props: Props) {
+  const { recipes, book, editedRecipes, customIds, onOpen, onNew, onBack } = props
   const [search, setSearch] = useState('')
 
   const shown = useMemo(() => {
@@ -29,8 +30,7 @@ export function RecipeListScreen({ recipes, book, editedRecipes, customIds, onEd
     <div className="screen">
       <h1>Recipes</h1>
       <p className="sub">
-        Everything in the book. Tap one to change the amounts, the steps, or
-        anything else — your version is what the app uses from then on.
+        {recipes.length} in the book. Tap one to read it, cook it, or change it.
       </p>
 
       <button className="btn" style={{ width: '100%', marginBottom: 14 }} onClick={onNew}>
@@ -45,8 +45,8 @@ export function RecipeListScreen({ recipes, book, editedRecipes, customIds, onEd
       />
 
       {shown.map(r => (
-        <button className="recipe-row" key={r.id} onClick={() => onEdit(r.id)}>
-          <span className="emoji">{r.emoji}</span>
+        <button className="recipe-row" key={r.id} onClick={() => onOpen(r.id)}>
+          <Thumb recipe={r} />
           <span className="text">
             <span className="n">
               {r.name}
@@ -75,4 +75,21 @@ export function RecipeListScreen({ recipes, book, editedRecipes, customIds, onEd
       </button>
     </div>
   )
+}
+
+/** Photo if we have one, emoji if the file hasn't landed yet. */
+function Thumb({ recipe }: { recipe: Recipe }) {
+  const [failed, setFailed] = useState(false)
+  if (HAS_PHOTO.has(recipe.id) && recipe.image && !failed) {
+    return (
+      <img
+        className="thumb"
+        src={`/recipes/${recipe.image}`}
+        alt=""
+        loading="lazy"
+        onError={() => setFailed(true)}
+      />
+    )
+  }
+  return <span className="thumb emoji">{recipe.emoji}</span>
 }

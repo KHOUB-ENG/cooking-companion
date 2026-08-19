@@ -4,6 +4,7 @@ import {
   nextSlot, planSlots, portionsForRecipe, rankRecipes,
   type Marginal, type Slot,
 } from '../lib/cost'
+import { HAS_PHOTO } from '../data/photos'
 import type { PriceBook } from '../lib/prices'
 import { EQUIPMENT_ICON, type PlanSetup, type Recipe } from '../types'
 
@@ -269,7 +270,7 @@ function Art({ recipe }: { recipe: Recipe }) {
   // Every recipe names an image, but the files arrive in batches - so a missing
   // one has to land on the emoji card rather than a broken-image icon.
   const [failed, setFailed] = useState(false)
-  const showImage = !!recipe.image && !failed
+  const showImage = HAS_PHOTO.has(recipe.id) && !!recipe.image && !failed
   return (
     <div className="art" style={{ '--hue': hueFor(recipe.id) } as React.CSSProperties}>
       {showImage ? (

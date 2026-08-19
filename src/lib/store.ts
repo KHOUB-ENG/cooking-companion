@@ -16,7 +16,7 @@ export type Step =
   /** The linear planning flow. */
   | 'goals' | 'equipment' | 'plan' | 'swipe' | 'week'
   /** Reached from home: browse the book, one-off meal, previous weeks. */
-  | 'recipes' | 'single' | 'sessions'
+  | 'recipes' | 'recipe' | 'single' | 'sessions'
   /** Full-screen, one step at a time, while you're actually cooking. */
   | 'cook'
   /** Off the linear flow: dip in from anywhere, come back where you were. */
