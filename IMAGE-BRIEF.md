@@ -15,9 +15,38 @@ the same mood.
 
 **Output format for every image:**
 
-- **Square, 1:1, 1024 × 1024**
+- **Aspect ratio: 1:1 (square).** Not 4:3, not 16:9, not portrait.
+- **Resolution: around 2048 × 2048** (or 1024 × 1024 — either is plenty)
 - **JPG**
 - Named exactly as the filename given for each one (e.g. `chilli.jpg`)
+
+### Why square, and what it means for composition
+
+The app crops these to fill a fixed box, and that box is a different shape
+depending on the screen:
+
+| Where | Visible box | Ratio |
+| --- | --- | --- |
+| Phone (the main case) | 320 × 303 | 1.06 — near square |
+| Laptop | 444 × 303 | 1.47 — landscape |
+
+A square image fits the phone almost exactly, with only about 3% trimmed. On a
+laptop the same square is cropped top and bottom, losing roughly **15% off the
+top and 15% off the bottom**.
+
+So the composition rule is:
+
+> **Keep the dish centred, and leave clear margin all the way round.** Nothing
+> important — no part of the food, no prop — in the top 15% or the bottom 15% of
+> the frame. Those bands get cut on wider screens. Think of the safe area as the
+> middle horizontal band of the square.
+
+Do **not** use portrait ratios (3:4, 9:16). The app never shows a tall image, so
+a portrait shot gets severely cropped and the dish ends up half out of frame.
+
+If the tool genuinely cannot do 1:1, **4:3 landscape is the acceptable
+fallback** — it crops slightly at the sides on a phone instead. 16:9 is too
+wide and will cut the dish badly.
 
 **These sit in a dark app** — near-black background `#12100e` with a warm orange
 accent. So the photography should be **warm and moody on a dark surface**, not
@@ -53,112 +82,7 @@ same one for all 38.**
 
 ---
 
-## The 38 images
-
-Each entry gives the **filename** and the **dish description** to append to the
-house style above.
-
-### Mains — stews, curries and one-pot things
-
-**1. `chilli.jpg` — Chilli Con Carne**
-A deep bowl of thick beef chilli: browned minced beef, dark red kidney beans and
-soft diced red pepper in a rich brick-red tomato sauce, glossy and thick rather
-than soupy. A neat mound of plain white long-grain rice pushed to one side of
-the same bowl.
-
-**2. `dahl.jpg` — Red Lentil Dahl**
-A bowl of thick golden-orange red lentil dahl, collapsed and creamy like a
-thick soup, with a swirl of dark wilted spinach folded through the top. Plain
-white rice to one side. Warm turmeric and cumin tones.
-
-**3. `chickpeacurry.jpg` — Chickpea & Sweet Potato Curry**
-A bowl of curry with soft orange sweet potato chunks and pale chickpeas in a
-creamy coconut-tomato sauce, dark green spinach wilted through. Plain white rice
-alongside. Warm orange and cream tones.
-
-**4. `thaicurry.jpg` — Thai Green Chicken Curry**
-A bowl of pale sage-green Thai coconut curry with chunks of white chicken
-breast, bright green broccoli florets and strips of red pepper, thin sliced
-spring onion scattered on top. White rice to one side.
-
-**5. `sausagecasserole.jpg` — Sausage & Bean Casserole**
-A bowl of hearty casserole: thick chunks of browned pork sausage, baked beans
-and sliced carrot in a deep red tomato sauce. A thick slice of white bread
-resting on the edge of the bowl for dipping.
-
-**6. `chorizostew.jpg` — Chorizo & Chickpea Stew**
-A bowl of deep brick-red stew, glossy with paprika-stained oil, containing small
-cubes of crisped chorizo, pale chickpeas and dark wilted spinach. A torn piece
-of crusty bread on the side.
-
-**7. `stroganoff.jpg` — Mushroom Stroganoff**
-A bowl of creamy paprika mushroom stroganoff: thickly sliced, deeply browned
-mushrooms in a pale beige-pink sauce dusted with paprika, served over plain
-white rice.
-
-**8. `meatballs.jpg` — Tomato Meatballs**
-A shallow pan or wide bowl of browned beef meatballs sitting in a thick, glossy
-deep-red tomato sauce, the sauce clinging to them. Rustic and simple.
-
-**9. `kebabtabai.jpg` — Kebab Tabai (Persian pan kebab)**
-A plate of Persian pan kebab: flattened oval patties of seasoned minced beef in
-a rich, oily tomato sauce, served with a mound of buttered white long-grain
-rice. Warm red and golden tones, home-cooked and generous.
-
-**10. `koobideh.jpg` — Koobideh (Persian minced beef kebab)**
-A plate of Persian koobideh: two long, thick, char-grilled minced beef kebabs
-with dark charred ridges along their length, served with soft flatbread and
-charred onion. Deep browns and blackened edges.
-
-### Mains — pasta
-
-**11. `tomatopasta.jpg` — Creamy Tomato Pasta**
-A bowl of penne coated in a creamy orange-red tomato sauce, glossy and clinging
-to the pasta, with grated cheddar melting into the surface.
-
-**12. `baconpasta.jpg` — Creamy Bacon & Pea Pasta**
-A bowl of pasta in a silky pale egg-and-cheese sauce with strips of crisped
-bacon and bright green peas throughout, heavily cracked black pepper on top.
-
-**13. `sausagepasta.jpg` — Sausage & Tomato Pasta**
-A bowl of pasta in a rich red tomato sauce with rough, craggy lumps of browned
-sausage meat, flecked with red chilli flakes and a little grated cheese.
-
-**14. `lentilbol.jpg` — Lentil Bolognese**
-A bowl of spaghetti under a thick, dark red lentil ragu, flecked with finely
-diced orange carrot. Rustic and hearty, the sauce properly thick.
-
-**15. `bolognese.jpg` — Mumani Bolognese**
-A bowl of pasta with a rich, thick beef ragu, warm golden-red in tone from
-turmeric and tomato purée, with finely diced carrot and onion cooked down into
-the sauce. Home-cooked and generous.
-
-**16. `tunasweetcorn.jpg` — Tuna & Sweetcorn Pasta**
-A bowl of pale creamy pasta salad: flaked tuna, bright yellow sweetcorn kernels
-and thinly sliced spring onion through mayonnaise-coated pasta, cracked black
-pepper on top.
-
-**17. `bakedfeta.jpg` — Baked Feta Pasta**
-A small baking dish of baked cherry tomatoes, split and collapsing, around a
-block of feta that has softened and been partly mashed into an orange-pink
-sauce, with pasta stirred through. Olive oil pooling at the edges.
-
-**18. `tunapastabake.jpg` — Tuna Pasta Bake**
-A baking dish of pasta bake with a deep golden-brown blistered cheese crust on
-top, one spoonful removed at the corner revealing tomato pasta, tuna and green
-peas underneath.
-
-**19. `chickenpastabake.jpg` — Cheesy Chicken Pasta Bake**
-A baking dish of pasta bake with a bubbling, golden, unevenly browned cheese
-top. One corner scooped out showing chunks of chicken, sliced mushroom and red
-tomato pasta beneath.
-
-### Mains — oven trays and roasts
-
-**20. `traybake.jpg` — Chicken & Potato Traybake**
-A dark metal roasting tray of bronzed, paprika-rubbed chicken thighs with
-crisped skin, golden roast potato chunks, charred red and yellow pepper strips
-and softened onion wedges. A squeezed lemon half in the corner.
+## The 17 images
 
 **21. `sausagetraybake.jpg` — Sausage & Root Veg Traybake**
 A dark metal roasting tray of deeply browned whole sausages among golden roast
@@ -251,6 +175,11 @@ surface, sliced banana fanned across the top and a thin drizzle of honey.
 A glass jar of overnight oats, thick and creamy, with a visible swirl of peanut
 butter through the top and a drizzle of honey. Shot from directly above, looking
 down into the jar.
+
+
+
+Each entry gives the **filename** and the **dish description** to append to the
+house style above.
 
 ---
 
