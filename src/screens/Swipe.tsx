@@ -123,7 +123,7 @@ export function SwipeScreen(props: Props) {
   }
 
   return (
-    <div className="screen">
+    <div className="screen swipe">
       <SlotStrip slots={slots} recipeById={recipeById} onRemove={onUnlike} />
 
       <div className="slot-brief">
