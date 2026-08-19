@@ -64,15 +64,25 @@ them, saved per-phone. Re-check the defaults once a term and bump
 
 ## Deploying
 
-Static build — no server needed.
+Live at **https://cooking-companion-iota.vercel.app**
+
+Vercel is connected to this repo, so shipping is just:
+
+```bash
+git push
+```
+
+Vercel builds and deploys on every push to `master`. If the build fails the
+previous deployment stays up, so a broken push cannot take the site down.
+
+To put it on a phone: open the URL in **Safari** (not Chrome) → Share → Add to
+Home Screen. It installs as a PWA and works offline once opened.
+
+To check a build locally before pushing:
 
 ```bash
 npm run build
 ```
-
-That produces `dist/`, a folder of plain files. Push the repo to GitHub, point
-Vercel at it, and it deploys on every push. Then on the iPhone: open the URL in
-**Safari** → Share → Add to Home Screen.
 
 ## Still to do
 
